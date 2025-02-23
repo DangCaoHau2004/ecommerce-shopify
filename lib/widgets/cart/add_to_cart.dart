@@ -103,6 +103,7 @@ class _AddToCartState extends ConsumerState<AddToCart> {
         {"purchase_quantity": productInCart["purchase_quantity"] + count},
       );
     }
+    Navigator.of(context).pop();
   }
 
   @override
@@ -151,12 +152,12 @@ class _AddToCartState extends ConsumerState<AddToCart> {
                         widget.product.sale == 0
                             ? "${formatCurrency(widget.product.price * count)} đ"
                             : "${formatCurrency(
-                                widget.product.price -
-                                    ((widget.product.price *
+                                (widget.product.price -
+                                            ((widget.product.price *
                                                     widget.product.sale) /
-                                                100)
-                                            .floor() *
-                                        count,
+                                                100))
+                                        .floor() *
+                                    count,
                               )} đ",
                         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                               color: Colors.orange,

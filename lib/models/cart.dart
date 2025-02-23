@@ -1,10 +1,10 @@
 class CartModel {
-  const CartModel(
+  CartModel(
       {required this.colorSelectIndex,
       required this.purchaseQuantity,
       required this.id});
-  final int purchaseQuantity;
-  final int colorSelectIndex;
+  int purchaseQuantity;
+  int colorSelectIndex;
   final String id;
   Map<String, dynamic> getCart() {
     return {

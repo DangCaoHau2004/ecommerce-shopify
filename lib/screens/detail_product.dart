@@ -8,21 +8,66 @@ import 'package:shopify/widgets/main_screens/home_product_list.dart';
 import 'package:shopify/widgets/main_screens/list_color.dart';
 import 'package:shopify/models/status_page.dart';
 import 'package:shopify/widgets/status_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopify/providers/user_data.dart';
 
-class DetailProductScreen extends StatefulWidget {
+class DetailProductScreen extends ConsumerStatefulWidget {
   const DetailProductScreen({super.key, required this.idProduct});
   final String idProduct;
 
   @override
-  State<DetailProductScreen> createState() => _DetailProductScreenState();
+  ConsumerState<DetailProductScreen> createState() =>
+      _DetailProductScreenState();
 }
 
-class _DetailProductScreenState extends State<DetailProductScreen> {
+class _DetailProductScreenState extends ConsumerState<DetailProductScreen> {
   bool _iconFav = false;
-
-  void _changeFav() {
+  bool _isLoading = false;
+  void _changeFav() async {
     setState(() {
+      _isLoading = true;
+    });
+    final tempFav = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(ref.watch(userData)["uid"])
+        .collection("favorite")
+        .doc(widget.idProduct)
+        .get();
+    if (tempFav.exists) {
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(ref.watch(userData)["uid"])
+          .collection("favorite")
+          .doc(widget.idProduct)
+          .delete();
+    } else {
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(ref.watch(userData)["uid"])
+          .collection("favorite")
+          .doc(widget.idProduct)
+          .set({"create_at": DateTime.now()});
+    }
+
+    setState(() {
+      _isLoading = false;
       _iconFav = !_iconFav;
+    });
+  }
+
+  void _loadFav() async {
+    _isLoading = true;
+    final checkFav = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(ref.read(userData)["uid"])
+        .collection("favorite")
+        .where(FieldPath.documentId, isEqualTo: widget.idProduct)
+        .get();
+    if (checkFav.docs.isNotEmpty) {
+      _iconFav = true;
+    }
+    setState(() {
+      _isLoading = false;
     });
   }
 
@@ -40,7 +85,28 @@ class _DetailProductScreenState extends State<DetailProductScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadFav();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(
+            "Loading...",
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(
+            color: Colors.orange,
+          ),
+        ),
+      );
+    }
     double width = MediaQuery.sizeOf(context).width;
     double height = MediaQuery.sizeOf(context).height;
     return StreamBuilder(

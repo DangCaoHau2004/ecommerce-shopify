@@ -71,7 +71,7 @@ class _SearchScreenState extends State<SearchScreen> {
           floating: true,
           pinned: false,
           title: Text(
-            "Favourite",
+            "Search",
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           actions: [

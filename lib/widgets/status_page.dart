@@ -53,8 +53,8 @@ class StatusPage extends StatelessWidget {
   }
 }
 
-class StatusPageWithOutAppBar extends StatelessWidget {
-  const StatusPageWithOutAppBar({
+class StatusPageWithOutScaffold extends StatelessWidget {
+  const StatusPageWithOutScaffold({
     super.key,
     required this.type,
     required this.err,
@@ -84,6 +84,57 @@ class StatusPageWithOutAppBar extends StatelessWidget {
       child: Text(
         "No data",
         style: Theme.of(context).textTheme.bodyMedium,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return type == StatusPageEnum.loading
+        ? loading(context)
+        : type == StatusPageEnum.error
+            ? error(context)
+            : noData(context);
+  }
+}
+
+class StatusPageWithOutAppBar extends StatelessWidget {
+  const StatusPageWithOutAppBar({
+    super.key,
+    required this.type,
+    required this.err,
+  });
+
+  final StatusPageEnum type;
+  final String err;
+  Widget loading(context) {
+    return Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
+    );
+  }
+
+  Widget error(context) {
+    return Scaffold(
+      body: Center(
+        child: Text(
+          "Error: $e",
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ),
+    );
+  }
+
+  Widget noData(context) {
+    return Scaffold(
+      body: Center(
+        child: Text(
+          "No data",
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
       ),
     );
   }

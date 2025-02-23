@@ -84,17 +84,17 @@ class _HomeProductListState extends State<HomeProductList> {
         stream: productStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const StatusPageWithOutAppBar(
+            return const StatusPageWithOutScaffold(
               type: StatusPageEnum.loading,
               err: "",
             );
           } else if (snapshot.hasError) {
-            return StatusPageWithOutAppBar(
+            return StatusPageWithOutScaffold(
               type: StatusPageEnum.error,
               err: snapshot.error.toString(),
             );
           } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const StatusPageWithOutAppBar(
+            return const StatusPageWithOutScaffold(
               type: StatusPageEnum.noData,
               err: "",
             );
