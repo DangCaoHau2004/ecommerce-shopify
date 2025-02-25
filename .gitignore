@@ -45,3 +45,4 @@ app.*.map.json
 firebase.json
 ./dart_tool
 .vscode
+.env

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopify/providers/user_data.dart';
 import 'package:shopify/utils/navigation_helper.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -27,13 +29,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             IconButton(
               onPressed: () {
-                navigatorToCart(context);
+                navigatorToCoupon(context);
               },
-              icon: const Icon(Icons.shopping_cart, color: Colors.white),
-            ),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.chat, color: Colors.white),
+              icon: const Icon(
+                Icons.confirmation_number,
+                color: Colors.white,
+              ),
             ),
           ],
         ),
@@ -83,12 +84,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Đặng Cao Hậu",
+                          ref.watch(userData)["username"],
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "Đặng Cao Hậu",
+                          ref.watch(userData)["email"],
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
@@ -217,7 +218,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   height: 80,
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    FirebaseAuth.instance.signOut();
+                  },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

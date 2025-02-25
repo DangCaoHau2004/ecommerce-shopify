@@ -5,6 +5,7 @@ import 'package:shopify/models/product.dart';
 import 'package:shopify/models/status_page.dart';
 import 'package:shopify/utils/formart_currency.dart';
 import 'package:shopify/providers/user_data.dart';
+import 'package:shopify/utils/navigation_helper.dart';
 import 'package:shopify/widgets/status_page.dart';
 import 'package:shopify/models/cart.dart';
 
@@ -116,6 +117,20 @@ class _CartListState extends ConsumerState<CartList> {
   int _totalProduct = 0;
   bool _isSelectAll = false;
   late List<CartModel> cartProduct;
+  void checkOut() {
+    List<Product> productSelect = [];
+    List<CartModel> cartProductSelect = [];
+    List<int> countSelect = [];
+    for (var i = 0; i < _isSelect.length; i++) {
+      if (_isSelect[i]) {
+        productSelect.add(widget.products[i]);
+        cartProductSelect.add(widget.cartProduct[i]);
+        countSelect.add(widget.count[i]);
+      }
+    }
+    navigatorToCheckOut(context, productSelect, cartProductSelect, countSelect);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -152,6 +167,12 @@ class _CartListState extends ConsumerState<CartList> {
                   onPressed: () {
                     setState(() {
                       _isSelect[idx] = !_isSelect[idx];
+                      if (const ListEquality().equals(_isSelect,
+                          List.filled(widget.products.length, true))) {
+                        _isSelectAll = true;
+                      } else {
+                        _isSelectAll = false;
+                      }
                       _resetTotal();
                     });
                   },
@@ -338,7 +359,7 @@ class _CartListState extends ConsumerState<CartList> {
             ),
             if (_totalProduct != 0)
               ElevatedButton(
-                onPressed: () {},
+                onPressed: checkOut,
                 child: Text(
                   "Check Out",
                   style: Theme.of(context).textTheme.bodySmall!.copyWith(

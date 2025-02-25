@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:shopify/models/list_chat.dart';
 import 'package:shopify/providers/user_data.dart';
 import 'package:shopify/widgets/status_page.dart';
 import 'package:shopify/models/status_page.dart';
@@ -21,9 +21,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   // Giả sử `userData` là thông tin người dùng hiện tại
 
-  void _addMessage() {
+  void _addMessage() async {
     if (_keyCommentForm.currentState!.validate()) {
       _keyCommentForm.currentState!.save();
+
+      await FirebaseFirestore.instance
+          .collection("chats")
+          .doc(ref.watch(userData)["uid"])
+          .set(
+            ListChatData(
+              createAt: DateTime.now(),
+              email: ref.watch(userData)["email"],
+              isRead: false,
+              uid: ref.watch(userData)["uid"],
+              username: ref.watch(userData)["username"],
+            ).getListChatData(),
+            SetOptions(merge: true),
+          );
       FirebaseFirestore.instance
           .collection("chats")
           .doc(ref.watch(userData)["uid"])
@@ -41,6 +55,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final keyboardSpace = MediaQuery.of(context).viewInsets.bottom;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -53,6 +69,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             .collection("chats")
             .doc(ref.watch(userData)["uid"])
             .collection("chat")
+            .orderBy("create_at", descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -122,8 +139,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       bottomNavigationBar: Form(
         key: _keyCommentForm,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: EdgeInsets.only(
+              bottom: keyboardSpace + 8, left: 8, right: 8, top: 8),
           child: TextFormField(
+            style: Theme.of(context).textTheme.bodySmall,
             controller: _commentController,
             decoration: InputDecoration(
               border: const OutlineInputBorder(),

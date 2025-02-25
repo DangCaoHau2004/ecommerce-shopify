@@ -1,6 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shopify/models/coupon.dart';
 import 'package:shopify/models/user_data.dart';
+import 'package:shopify/screens/admin/tabs_admin.dart';
+import 'package:shopify/screens/client/address/add_new_address.dart';
+import 'package:shopify/screens/client/coupon.dart';
 import 'package:shopify/screens/client/tabs.dart';
 import 'package:shopify/screens/login_signup.dart';
 import 'package:shopify/widgets/status_page.dart';
@@ -10,6 +14,7 @@ import 'package:shopify/providers/user_data.dart';
 import 'firebase_options.dart';
 import 'package:flutter/services.dart';
 import 'package:shopify/models/status_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 var kColorScheme =
     ColorScheme.fromSeed(seedColor: const Color.fromARGB(197, 255, 166, 2))
@@ -29,6 +34,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await dotenv.load(fileName: ".env");
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -176,7 +182,9 @@ class _MyAppState extends ConsumerState<MyApp> {
                   avatar: value["avatar"],
                 ).getUserData();
               });
-
+              if (value["role"] == "admin") {
+                return const TabsAdminScreen();
+              }
               return const TabsScreen();
             },
             error: (error, stackStrace) {
