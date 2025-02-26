@@ -40,6 +40,37 @@ class _DetailProductAdminScreenState
     );
   }
 
+  void removeProduct() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      await FirebaseFirestore.instance
+          .collection("products")
+          .doc(widget.idProduct)
+          .delete();
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Success"),
+          action: SnackBarAction(label: "Ok", onPressed: () {}),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("$e"),
+          action: SnackBarAction(label: "Ok", onPressed: () {}),
+        ),
+      );
+    }
+    setState(() {
+      _isLoading = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -107,6 +138,10 @@ class _DetailProductAdminScreenState
                 },
                 icon: const Icon(Icons.edit),
               ),
+              IconButton(
+                onPressed: removeProduct,
+                icon: const Icon(Icons.delete),
+              )
             ],
           ),
           body: ListView(

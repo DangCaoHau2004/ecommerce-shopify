@@ -11,7 +11,8 @@ class Coupon {
       required this.startDate,
       required this.endDate,
       required this.active,
-      required this.applicableProductType});
+      required this.applicableProductType,
+      required this.id});
   final String code;
   final String content;
   final String type;
@@ -20,11 +21,14 @@ class Coupon {
   final int minOrderAmount;
   final int usageLimit;
   final int usedCount;
-  final String startDate;
-  final String endDate;
+  final DateTime startDate;
+  final DateTime endDate;
+  final String id;
   final bool active;
   final String applicableProductType;
-
+// có 2 trường hợp xóa code 1 là sau khi đã hết hạn, 2 là ko tồn tại
+// ko xóa code sau khi đã sử dụng
+// chỉ có thể add code cho user sau khi đã active và code còn hiệu lực
   Map<String, dynamic> getCouponData() {
     return {
       "code": code,

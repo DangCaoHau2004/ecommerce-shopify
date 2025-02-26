@@ -11,63 +11,8 @@ class SelectCoupon extends StatefulWidget {
 class _SelectCouponState extends State<SelectCoupon> {
   int? _deliverySelect;
   int? _productSelect;
-
-  List<Coupon> _deliveryCoupon = [
-    Coupon(
-        code: "",
-        content: "50k discount on all items",
-        type: "delivery",
-        discountType: "fixed",
-        discountValue: 50000,
-        minOrderAmount: 0,
-        usageLimit: 1000,
-        usedCount: 0,
-        startDate: "",
-        endDate: "",
-        active: true,
-        applicableProductType: "Living Room"),
-    Coupon(
-        code: "",
-        content: "50% discount on all items",
-        type: "delivery",
-        discountType: "percent",
-        discountValue: 50,
-        minOrderAmount: 0,
-        usageLimit: 1000,
-        usedCount: 0,
-        startDate: "",
-        endDate: "",
-        active: true,
-        applicableProductType: "all"),
-  ];
-  List<Coupon> _productCoupon = [
-    Coupon(
-        code: "",
-        content: "50k discount on all items",
-        type: "product",
-        discountType: "fixed",
-        discountValue: 50000,
-        minOrderAmount: 0,
-        usageLimit: 1000,
-        usedCount: 0,
-        startDate: "",
-        endDate: "",
-        active: true,
-        applicableProductType: "Living Room"),
-    Coupon(
-        code: "",
-        content: "50% discount on all items",
-        type: "product",
-        discountType: "percent",
-        discountValue: 50,
-        minOrderAmount: 0,
-        usageLimit: 1000,
-        usedCount: 0,
-        startDate: "",
-        endDate: "",
-        active: true,
-        applicableProductType: "all"),
-  ];
+  List<Coupon> _deliveryCoupon = [];
+  List<Coupon> _productCoupon = [];
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.sizeOf(context).width;
@@ -94,6 +39,11 @@ class _SelectCouponState extends State<SelectCoupon> {
             const SizedBox(
               height: 16,
             ),
+            if (_deliveryCoupon.isEmpty)
+              Text(
+                "None",
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             for (int i = 0; i < _deliveryCoupon.length; i++)
               Container(
                 height: height / 6,
@@ -244,6 +194,11 @@ class _SelectCouponState extends State<SelectCoupon> {
             const SizedBox(
               height: 16,
             ),
+            if (_productCoupon.isEmpty)
+              Text(
+                "None",
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             for (int i = 0; i < _productCoupon.length; i++)
               Container(
                 height: height / 6,

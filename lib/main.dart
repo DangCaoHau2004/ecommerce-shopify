@@ -85,6 +85,54 @@ class _MyAppState extends ConsumerState<MyApp> {
           checkColor: WidgetStateProperty.all(kColorScheme.onTertiary),
           fillColor: WidgetStateProperty.resolveWith(getColor),
         ),
+        datePickerTheme: DatePickerThemeData(
+          backgroundColor: kColorScheme.onTertiary,
+          surfaceTintColor: Colors.transparent,
+          headerForegroundColor: kColorScheme.secondary,
+          dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(MaterialState.disabled)) {
+              return kColorScheme.secondary.withOpacity(0.3);
+            }
+            return kColorScheme.secondary;
+          }),
+          dayStyle: const TextStyle(
+            fontSize: 20,
+            color: Colors.black,
+          ),
+          yearStyle: const TextStyle(
+            fontSize: 20,
+            color: Colors.black,
+          ),
+        ),
+        timePickerTheme: TimePickerThemeData(
+          backgroundColor: kColorScheme.onTertiary,
+          hourMinuteColor: MaterialStateColor.resolveWith((states) {
+            if (states.contains(MaterialState.selected)) {
+              return kColorScheme.primary;
+            }
+            return kColorScheme.onTertiary;
+          }),
+          hourMinuteTextColor: MaterialStateColor.resolveWith((states) {
+            if (states.contains(MaterialState.selected)) {
+              return kColorScheme.onTertiary;
+            }
+            return kColorScheme.secondary;
+          }),
+          dialBackgroundColor: kColorScheme.onTertiary,
+          dialHandColor: kColorScheme.primary,
+          dialTextColor: MaterialStateColor.resolveWith((states) {
+            if (states.contains(MaterialState.selected)) {
+              return kColorScheme.onTertiary;
+            }
+            return kColorScheme.secondary;
+          }),
+          entryModeIconColor: kColorScheme.secondary,
+          helpTextStyle: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: kColorScheme.secondary,
+          ),
+        ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
             backgroundColor: WidgetStateProperty.all(kColorScheme.primary),

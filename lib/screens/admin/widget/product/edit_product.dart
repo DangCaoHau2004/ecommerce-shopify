@@ -94,11 +94,13 @@ class _EditProductState extends State<EditProduct> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium!
-                .copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium!
+              .copyWith(fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           initialValue: initialValue,
@@ -139,11 +141,12 @@ class _EditProductState extends State<EditProduct> {
                 onSaved: (value) => _enterLinkImg[index] = value!.trim(),
               ),
             ),
-            IconButton(
-              icon: Icon(Icons.delete,
-                  color: Theme.of(context).colorScheme.error),
-              onPressed: () => setState(() => _enterLinkImg.removeAt(index)),
-            )
+            if (_enterLinkImg.length > 1)
+              IconButton(
+                icon: Icon(Icons.delete,
+                    color: Theme.of(context).colorScheme.error),
+                onPressed: () => setState(() => _enterLinkImg.removeAt(index)),
+              )
           ],
         ),
         const SizedBox(
@@ -167,17 +170,18 @@ class _EditProductState extends State<EditProduct> {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const Spacer(),
-            IconButton(
-              icon: Icon(Icons.delete,
-                  color: Theme.of(context).colorScheme.error),
-              onPressed: () {
-                setState(() {
-                  _enterColor.removeAt(index);
-                  _enterColorCode.removeAt(index);
-                  _enterLinkImageMatch.removeAt(index);
-                });
-              },
-            ),
+            if (_enterColor.length > 1)
+              IconButton(
+                icon: Icon(Icons.delete,
+                    color: Theme.of(context).colorScheme.error),
+                onPressed: () {
+                  setState(() {
+                    _enterColor.removeAt(index);
+                    _enterColorCode.removeAt(index);
+                    _enterLinkImageMatch.removeAt(index);
+                  });
+                },
+              ),
           ],
         ),
         TextFormField(
@@ -228,7 +232,7 @@ class _EditProductState extends State<EditProduct> {
           validator: (value) => value == null || value.trim().isEmpty
               ? "Please enter correctly!"
               : null,
-          onSaved: (value) => _enterColor[index] = value!.trim(),
+          onSaved: (value) => _enterLinkImageMatch[index] = value!.trim(),
         ),
       ],
     );
@@ -239,9 +243,9 @@ class _EditProductState extends State<EditProduct> {
       _isLoading = true;
     });
     if (_keyForm.currentState!.validate()) {
+      _keyForm.currentState!.save();
+
       try {
-        _keyForm.currentState!.save();
-        print("id ${widget.idProduct}");
         await FirebaseFirestore.instance
             .collection("products")
             .doc(widget.idProduct)
@@ -310,107 +314,115 @@ class _EditProductState extends State<EditProduct> {
           bottom: 16 + keyboardSpace, top: 16, left: 16, right: 16),
       child: Form(
         key: _keyForm,
-        child: ListView(
-          children: [
-            Row(
-              children: [
-                Text("Edit Product",
-                    style: Theme.of(context).textTheme.bodyLarge),
-                const Spacer(),
-                IconButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    icon: const Icon(Icons.close))
-              ],
-            ),
-            const SizedBox(height: 20),
-            buildTextField("Name", _name!, (value) => _name = value),
-            buildTextField("Stock Quantity", _stock.toString(),
-                (value) => _stock = int.parse(value!),
-                inputType: TextInputType.number),
-            buildTextField(
-                "Sale", _sale.toString(), (value) => _sale = int.parse(value!),
-                inputType: TextInputType.number),
-            buildTextField(
-                "Description", _description!, (value) => _description = value),
-            const SizedBox(height: 16),
-            Text("Images",
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium!
-                    .copyWith(fontWeight: FontWeight.bold)),
-            ...List.generate(
-              _enterLinkImg.length,
-              (index) => buildImageField(index),
-            ),
-            ElevatedButton(
-              child: Icon(
-                Icons.add,
-                color: Theme.of(context).colorScheme.onTertiary,
-              ),
-              onPressed: () => setState(() {
-                _enterLinkImg.add("");
-              }),
-            ),
-            const SizedBox(height: 16),
-            Text("Colors",
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium!
-                    .copyWith(fontWeight: FontWeight.bold)),
-            ...List.generate(
-                _enterColor.length, (index) => buildColorField(index)),
-            ElevatedButton(
-              child: Icon(
-                Icons.add,
-                color: Theme.of(context).colorScheme.onTertiary,
-              ),
-              onPressed: () => setState(() {
-                _enterColor.add("");
-                _enterColorCode.add(4294967295);
-                _enterLinkImageMatch.add("");
-              }),
-            ),
-            const SizedBox(height: 16),
-            buildTextField("Price", _enterprice.toString(),
-                (value) => _enterprice = int.parse(value!)),
-            buildTextField("Weight(kg)", _enterWeight.toString(),
-                (value) => _enterWeight = double.parse(value!)),
-            Text(
-              "Type",
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(fontWeight: FontWeight.bold),
-            ),
-            DropdownButton(
-                value: _enterType,
-                items: [
-                  ...type.map((t) {
-                    return DropdownMenuItem(
-                      value: t,
-                      child: Text(
-                        t,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    );
-                  })
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text("Edit Product",
+                      style: Theme.of(context).textTheme.bodyLarge),
+                  const Spacer(),
+                  IconButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(Icons.close))
                 ],
-                onChanged: (value) {
-                  setState(() {
-                    _enterType = value;
-                  });
-                }),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: saveForm,
-              child: Text(
-                "Save",
-                style: Theme.of(context).textTheme.bodySmall,
               ),
-            )
-          ],
+              const SizedBox(height: 20),
+              buildTextField("Name", _name!, (value) => _name = value),
+              buildTextField("Stock Quantity", _stock.toString(),
+                  (value) => _stock = int.parse(value!.trim()),
+                  inputType: TextInputType.number),
+              buildTextField("Sale(%)", _sale.toString(),
+                  (value) => _sale = int.parse(value!.trim()),
+                  inputType: TextInputType.number),
+              const SizedBox(
+                height: 4,
+              ),
+              buildTextField("Description", _description!,
+                  (value) => _description = value),
+              const SizedBox(height: 16),
+              Text("Images",
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium!
+                      .copyWith(fontWeight: FontWeight.bold)),
+              ...List.generate(
+                _enterLinkImg.length,
+                (index) => buildImageField(index),
+              ),
+              ElevatedButton(
+                child: Icon(
+                  Icons.add,
+                  color: Theme.of(context).colorScheme.onTertiary,
+                ),
+                onPressed: () => setState(() {
+                  _enterLinkImg.add("");
+                }),
+              ),
+              const SizedBox(height: 16),
+              Text("Colors",
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium!
+                      .copyWith(fontWeight: FontWeight.bold)),
+              ...List.generate(
+                  _enterColor.length, (index) => buildColorField(index)),
+              ElevatedButton(
+                child: Icon(
+                  Icons.add,
+                  color: Theme.of(context).colorScheme.onTertiary,
+                ),
+                onPressed: () => setState(() {
+                  _enterColor.add("");
+                  _enterColorCode.add(4294967295);
+                  _enterLinkImageMatch.add("");
+                }),
+              ),
+              const SizedBox(height: 16),
+              buildTextField("Price", _enterprice.toString(),
+                  (value) => _enterprice = int.parse(value!.trim()),
+                  inputType: TextInputType.number),
+              buildTextField("Weight(kg)", _enterWeight.toString(),
+                  (value) => _enterWeight = double.parse(value!.trim()),
+                  inputType: TextInputType.number),
+              Text(
+                "Type",
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium!
+                    .copyWith(fontWeight: FontWeight.bold),
+              ),
+              DropdownButtonFormField(
+                  value: _enterType,
+                  items: [
+                    ...type.map((t) {
+                      return DropdownMenuItem(
+                        value: t,
+                        child: Text(
+                          t,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      );
+                    })
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _enterType = value;
+                    });
+                  }),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: saveForm,
+                child: Text(
+                  "Save",
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

@@ -44,6 +44,7 @@ class _CheckOutScreenState extends ConsumerState<CheckOutScreen> {
 
   // Khi chuyển hướng sang màn hình voucher thì phải truyền đi danh sách các loại sản phẩm đang có rồi từ đó truy xuất
   Coupon _productCoupon = Coupon(
+      id: "1111",
       code: "",
       content: "50k discount on all items",
       type: "product",
@@ -52,11 +53,12 @@ class _CheckOutScreenState extends ConsumerState<CheckOutScreen> {
       minOrderAmount: 0,
       usageLimit: 1000,
       usedCount: 0,
-      startDate: "",
-      endDate: "",
+      startDate: DateTime.now(),
+      endDate: DateTime.now(),
       active: true,
       applicableProductType: "Living Room");
   Coupon _deliveryCoupon = Coupon(
+      id: "12313",
       code: "",
       content: "50% discount on all items",
       type: "delivery",
@@ -65,8 +67,8 @@ class _CheckOutScreenState extends ConsumerState<CheckOutScreen> {
       minOrderAmount: 0,
       usageLimit: 1000,
       usedCount: 0,
-      startDate: "",
-      endDate: "",
+      startDate: DateTime.now(),
+      endDate: DateTime.now(),
       active: true,
       applicableProductType: "all");
   String idAddressSelect = "";
