@@ -17,6 +17,19 @@ class Cart extends ConsumerStatefulWidget {
 }
 
 class _CartState extends ConsumerState<Cart> {
+  Future<List<QueryDocumentSnapshot>> getAllProcFromCart(
+      List<String> idProc) async {
+    final List<QueryDocumentSnapshot> allProc = [];
+    for (String i in idProc) {
+      final proc = await FirebaseFirestore.instance
+          .collection("products")
+          .where(FieldPath.documentId, isEqualTo: i)
+          .get();
+      allProc.add(proc.docs[0]);
+    }
+    return allProc;
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<QuerySnapshot>(
@@ -32,7 +45,18 @@ class _CartState extends ConsumerState<Cart> {
           return StatusPage(
               type: StatusPageEnum.error, err: snapshot.error.toString());
         } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const StatusPage(type: StatusPageEnum.noData, err: "");
+          return Scaffold(
+            appBar: AppBar(
+              title:
+                  Text("My Cart", style: Theme.of(context).textTheme.bodyLarge),
+            ),
+            body: Center(
+              child: Text(
+                "You have no orders in your cart!",
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          );
         }
 
         List<CartModel> cartProduct = [];
@@ -44,29 +68,27 @@ class _CartState extends ConsumerState<Cart> {
             CartModel(
               colorSelectIndex: doc["color_select_index"],
               id: doc.id,
+              idProc: doc["id"],
               purchaseQuantity: doc["purchase_quantity"],
             ),
           );
-          cartId.add(doc.id);
+          cartId.add(doc["id"]);
           count.add(doc["purchase_quantity"]);
         }
 
-        return StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection("products")
-              .where(FieldPath.documentId, whereIn: cartId)
-              .snapshots(),
+        return FutureBuilder<List<QueryDocumentSnapshot>>(
+          future: getAllProcFromCart(cartId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const StatusPage(type: StatusPageEnum.loading, err: "");
             } else if (snapshot.hasError) {
               return StatusPage(
                   type: StatusPageEnum.error, err: snapshot.error.toString());
-            } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return const StatusPage(type: StatusPageEnum.noData, err: "");
             }
 
-            List<Product> products = snapshot.data!.docs.map((doc) {
+            List<Product> products = snapshot.data!.map((doc) {
               return Product(
                 createAt: doc["create_at"].toDate(),
                 stockQuantity: doc["stock_quantity"],
@@ -117,32 +139,72 @@ class _CartListState extends ConsumerState<CartList> {
   int _totalProduct = 0;
   bool _isSelectAll = false;
   late List<CartModel> cartProduct;
+  late List<Product> proc;
+  late List<int> count;
+  bool _isLoading = false;
   void checkOut() {
-    List<Product> productSelect = [];
-    List<CartModel> cartProductSelect = [];
-    List<int> countSelect = [];
-    for (var i = 0; i < _isSelect.length; i++) {
-      if (_isSelect[i]) {
-        productSelect.add(widget.products[i]);
-        cartProductSelect.add(widget.cartProduct[i]);
-        countSelect.add(widget.count[i]);
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+      List<Product> productSelect = [];
+      List<CartModel> cartProductSelect = [];
+      List<int> countSelect = [];
+
+      for (var i = 0; i < _isSelect.length; i++) {
+        if (_isSelect[i]) {
+          productSelect.add(proc[i]);
+          cartProductSelect.add(cartProduct[i]);
+          countSelect.add(count[i]);
+        }
       }
+      //  kiểm tra xem số lượng hàng có bị vượt quá
+      Map<String, int> countMap = {};
+      for (int i = 0; i < productSelect.length; i++) {
+        countMap[cartProductSelect[i].idProc] =
+            countMap[cartProductSelect[i].idProc] == null
+                ? cartProductSelect[i].purchaseQuantity
+                : countMap[cartProductSelect[i].idProc]! +
+                    cartProductSelect[i].purchaseQuantity;
+        if (countMap[cartProductSelect[i].idProc]! >
+            productSelect[i].stockQuantity) {
+          throw Exception(
+              "You have exceeded the ${productSelect[i].name} quantity.");
+        }
+      }
+      setState(() {
+        _isLoading = false;
+      });
+      navigatorToCheckOut(
+          context, productSelect, cartProductSelect, countSelect);
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("$e"),
+          action: SnackBarAction(label: "Ok", onPressed: () {}),
+        ),
+      );
     }
-    navigatorToCheckOut(context, productSelect, cartProductSelect, countSelect);
   }
 
   @override
   void initState() {
     super.initState();
+    proc = widget.products;
     cartProduct = widget.cartProduct;
-    _isSelect = List.filled(widget.products.length, false);
+    count = widget.count;
+    _isSelect = List.generate(widget.products.length, (index) => false);
   }
 
   void _resetTotal() {
     _totalProduct = 0;
-    for (var i = 0; i < widget.products.length; i++) {
+    for (var i = 0; i < proc.length; i++) {
       if (_isSelect[i]) {
-        _totalProduct += (widget.products[i].price * widget.count[i]);
+        _totalProduct += (proc[i].price * count[i]);
       }
     }
   }
@@ -156,168 +218,259 @@ class _CartListState extends ConsumerState<CartList> {
       appBar: AppBar(
         title: Text("My Cart", style: Theme.of(context).textTheme.bodyLarge),
       ),
-      body: ListView.builder(
-        itemCount: widget.products.length,
-        itemBuilder: (context, idx) {
-          return Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _isSelect[idx] = !_isSelect[idx];
-                      if (const ListEquality().equals(_isSelect,
-                          List.filled(widget.products.length, true))) {
-                        _isSelectAll = true;
-                      } else {
-                        _isSelectAll = false;
-                      }
-                      _resetTotal();
-                    });
-                  },
-                  icon: _isSelect[idx]
-                      ? const Icon(Icons.check_box)
-                      : const Icon(Icons.check_box_outline_blank),
-                ),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Image.network(
-                    widget.products[idx]
-                        .linkImageMatch[cartProduct[idx].colorSelectIndex],
-                    width: width / 5,
-                    fit: BoxFit.fitWidth,
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Colors.orange,
+              ),
+            )
+          : proc.isEmpty
+              ? Center(
+                  child: Text(
+                    "You have no orders in your cart!",
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.products[idx].name,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall!
-                            .copyWith(fontWeight: FontWeight.bold),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "${formatCurrency(widget.products[idx].price)} đ",
-                        style: Theme.of(context).textTheme.bodySmall!,
-                      ),
-                      const SizedBox(height: 4),
-                      SizedBox(
-                        width: double.infinity,
-                        child: DropdownButton(
-                          elevation: 0,
-                          underline: Container(
-                              height: 0, color: Colors.deepPurpleAccent),
-                          value: cartProduct[idx]
-                              .colorSelectIndex, // Chỉ mục màu đã chọn
-                          items: [
-                            for (int i = 0;
-                                i < widget.products[idx].color.length;
-                                i++)
-                              DropdownMenuItem(
-                                value: i,
-                                child: Text(
-                                  widget.products[idx]
-                                      .color[i], // Hiển thị tên màu
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              )
-                          ],
-                          dropdownColor:
-                              Theme.of(context).colorScheme.onTertiary,
-                          onChanged: (value) {
-                            FirebaseFirestore.instance
-                                .collection("users")
-                                .doc(ref.watch(userData)["uid"])
-                                .collection("cart")
-                                .doc(widget.products[idx].id)
-                                .update({"color_select_index": value!});
-                            setState(() {
-                              cartProduct[idx].colorSelectIndex = value;
-                            });
-                          },
-                        ),
-                      ),
-                      Row(
+                )
+              : ListView.builder(
+                  itemCount: proc.length,
+                  itemBuilder: (context, idx) {
+                    return Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
                         children: [
                           IconButton(
                             onPressed: () {
-                              if (widget.count[idx] - 1 == 0) {
-                                FirebaseFirestore.instance
-                                    .collection("users")
-                                    .doc(ref.watch(userData)["uid"])
-                                    .collection("cart")
-                                    .doc(widget.products[idx].id)
-                                    .delete();
-                                setState(() {
-                                  widget.products.removeAt(idx);
-                                  widget.count.removeAt(idx);
-                                  _isSelect.removeAt(idx);
-                                  _resetTotal();
-                                });
-                              } else {
-                                FirebaseFirestore.instance
-                                    .collection("users")
-                                    .doc(ref.watch(userData)["uid"])
-                                    .collection("cart")
-                                    .doc(widget.products[idx].id)
-                                    .update({
-                                  "purchase_quantity": widget.count[idx] - 1
-                                });
-                                setState(() {
-                                  widget.count[idx] -= 1;
-                                  _resetTotal();
-                                });
-                              }
+                              setState(() {
+                                _isSelect[idx] = !_isSelect[idx];
+                                if (const ListEquality().equals(_isSelect,
+                                    List.filled(proc.length, true))) {
+                                  _isSelectAll = true;
+                                } else {
+                                  _isSelectAll = false;
+                                }
+                                _resetTotal();
+                              });
                             },
-                            icon: const Icon(Icons.remove),
+                            icon: _isSelect[idx]
+                                ? const Icon(Icons.check_box)
+                                : const Icon(Icons.check_box_outline_blank),
                           ),
-                          Text(
-                            widget.count[idx].toString(),
-                            style: Theme.of(context).textTheme.bodySmall!,
-                          ),
-                          IconButton(
-                            style: IconButton.styleFrom(
-                              disabledBackgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .onTertiary
-                                  .withOpacity(0.5),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.network(
+                              proc[idx].linkImageMatch[
+                                  cartProduct[idx].colorSelectIndex],
+                              width: width / 5,
+                              fit: BoxFit.fitWidth,
                             ),
-                            onPressed: widget.products[idx].stockQuantity <
-                                    (widget.count[idx] + 1)
-                                ? null
-                                : () {
-                                    FirebaseFirestore.instance
-                                        .collection("users")
-                                        .doc(ref.watch(userData)["uid"])
-                                        .collection("cart")
-                                        .doc(widget.products[idx].id)
-                                        .update({
-                                      "purchase_quantity": widget.count[idx] + 1
-                                    });
-                                    setState(() {
-                                      widget.count[idx] += 1;
-                                      _resetTotal();
-                                    });
-                                  },
-                            icon: const Icon(Icons.add),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  proc[idx].name,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall!
+                                      .copyWith(fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  "${formatCurrency(proc[idx].price)} đ",
+                                  style: Theme.of(context).textTheme.bodySmall!,
+                                ),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: DropdownButton(
+                                    elevation: 0,
+                                    underline: Container(
+                                        height: 0,
+                                        color: Colors.deepPurpleAccent),
+                                    value: cartProduct[idx]
+                                        .colorSelectIndex, // Chỉ mục màu đã chọn
+                                    items: [
+                                      for (int i = 0;
+                                          i < proc[idx].color.length;
+                                          i++)
+                                        DropdownMenuItem(
+                                          value: i,
+                                          child: Text(
+                                            proc[idx]
+                                                .color[i], // Hiển thị tên màu
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall,
+                                          ),
+                                        )
+                                    ],
+                                    dropdownColor: Theme.of(context)
+                                        .colorScheme
+                                        .onTertiary,
+                                    onChanged: (value) async {
+                                      setState(() {
+                                        _isLoading = true;
+                                      });
+                                      final checkInCart =
+                                          await FirebaseFirestore.instance
+                                              .collection("users")
+                                              .doc(ref.watch(userData)["uid"])
+                                              .collection("cart")
+                                              .where("id",
+                                                  isEqualTo:
+                                                      cartProduct[idx].idProc)
+                                              .where("color_select_index",
+                                                  isEqualTo: value!)
+                                              .get();
+                                      // nếu như màu đã tồn tại trong db
+                                      if (checkInCart.docs.isNotEmpty) {
+                                        for (var i = 0;
+                                            i < cartProduct.length;
+                                            i++) {
+                                          if (cartProduct[i].idProc ==
+                                                  cartProduct[idx].idProc &&
+                                              cartProduct[i].colorSelectIndex ==
+                                                  value) {
+                                            if (cartProduct[i]
+                                                        .purchaseQuantity +
+                                                    cartProduct[idx]
+                                                        .purchaseQuantity >
+                                                proc[i].stockQuantity) {
+                                              setState(() {
+                                                _isLoading = false;
+                                              });
+                                              return;
+                                            }
+                                            cartProduct[i].purchaseQuantity +=
+                                                cartProduct[idx]
+                                                    .purchaseQuantity;
+                                          }
+                                        }
+                                        FirebaseFirestore.instance
+                                            .collection("users")
+                                            .doc(ref.watch(userData)["uid"])
+                                            .collection("cart")
+                                            .doc(checkInCart.docs[0].id)
+                                            .update({
+                                          "purchase_quantity": checkInCart
+                                                      .docs[0]
+                                                  ["purchase_quantity"] +
+                                              cartProduct[idx].purchaseQuantity
+                                        });
+                                        FirebaseFirestore.instance
+                                            .collection("users")
+                                            .doc(ref.watch(userData)["uid"])
+                                            .collection("cart")
+                                            .doc(cartProduct[idx].id)
+                                            .delete();
+
+                                        setState(() {
+                                          _isLoading = false;
+                                          proc.removeAt(idx);
+                                          count.removeAt(idx);
+                                          cartProduct.removeAt(idx).id;
+                                          _isSelect.removeAt(idx);
+                                          _resetTotal();
+                                        });
+                                        return;
+                                      }
+                                      // nếu màu chưa tồn tại trong db
+                                      FirebaseFirestore.instance
+                                          .collection("users")
+                                          .doc(ref.watch(userData)["uid"])
+                                          .collection("cart")
+                                          .doc(cartProduct[idx].id)
+                                          .update(
+                                              {"color_select_index": value});
+                                      setState(() {
+                                        _isLoading = false;
+                                        cartProduct[idx].colorSelectIndex =
+                                            value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        if (count[idx] - 1 == 0) {
+                                          FirebaseFirestore.instance
+                                              .collection("users")
+                                              .doc(ref.watch(userData)["uid"])
+                                              .collection("cart")
+                                              .doc(cartProduct[idx].id)
+                                              .delete();
+                                          setState(() {
+                                            proc.removeAt(idx);
+                                            count.removeAt(idx);
+                                            cartProduct.removeAt(idx).id;
+                                            _isSelect.removeAt(idx);
+                                            _resetTotal();
+                                          });
+                                        } else {
+                                          FirebaseFirestore.instance
+                                              .collection("users")
+                                              .doc(ref.watch(userData)["uid"])
+                                              .collection("cart")
+                                              .doc(cartProduct[idx].id)
+                                              .update({
+                                            "purchase_quantity": count[idx] - 1
+                                          });
+                                          setState(() {
+                                            count[idx] -= 1;
+                                            _resetTotal();
+                                          });
+                                        }
+                                      },
+                                      icon: const Icon(Icons.remove),
+                                    ),
+                                    Text(
+                                      count[idx].toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall!,
+                                    ),
+                                    IconButton(
+                                      style: IconButton.styleFrom(
+                                        disabledBackgroundColor:
+                                            Theme.of(context)
+                                                .colorScheme
+                                                .onTertiary
+                                                .withOpacity(0.5),
+                                      ),
+                                      onPressed: proc[idx].stockQuantity <
+                                              (count[idx] + 1)
+                                          ? null
+                                          : () {
+                                              FirebaseFirestore.instance
+                                                  .collection("users")
+                                                  .doc(ref
+                                                      .watch(userData)["uid"])
+                                                  .collection("cart")
+                                                  .doc(cartProduct[idx].id)
+                                                  .update({
+                                                "purchase_quantity":
+                                                    count[idx] + 1
+                                              });
+                                              setState(() {
+                                                count[idx] += 1;
+                                                _resetTotal();
+                                              });
+                                            },
+                                      icon: const Icon(Icons.add),
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
                           ),
                         ],
-                      )
-                    ],
-                  ),
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
-          );
-        },
-      ),
       bottomNavigationBar: Container(
         height: _totalProduct == 0 ? height / 10 : height / 8,
         padding: const EdgeInsets.all(16),
@@ -333,8 +486,7 @@ class _CartListState extends ConsumerState<CartList> {
                         onPressed: () {
                           setState(() {
                             _isSelectAll = !_isSelectAll;
-                            _isSelect = List.filled(
-                                widget.products.length, _isSelectAll);
+                            _isSelect = List.filled(proc.length, _isSelectAll);
                             _resetTotal();
                           });
                         },

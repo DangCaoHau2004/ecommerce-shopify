@@ -1,14 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shopify/models/coupon.dart';
 import 'package:shopify/utils/formart_date_time.dart';
 
-class AddCoupon extends StatefulWidget {
-  const AddCoupon({super.key});
+class EditCoupon extends StatefulWidget {
+  const EditCoupon({super.key, required this.coupon});
+  final Coupon coupon;
   @override
-  State<AddCoupon> createState() => _AddCouponState();
+  State<EditCoupon> createState() => _EditCouponState();
 }
 
-class _AddCouponState extends State<AddCoupon> {
+class _EditCouponState extends State<EditCoupon> {
   final _formKey = GlobalKey<FormState>();
   List<String> type = ["delivery", "product"];
   List<String> discountType = ["percent", "fixed"];
@@ -21,20 +23,39 @@ class _AddCouponState extends State<AddCoupon> {
     "Dining Room",
   ];
   bool _isLoading = false;
-  String _enterCode = "";
-  String _enterContent = "";
-  String _enterType = "delivery";
-  String _enterDiscountType = "percent";
-  int _enterDiscountValue = 0;
-  int _enterMinOrderAmount = 0;
-  int _enterUsageLimit = 0;
-  int _enterUsedCount = 0;
-  DateTime _enterStartDate = DateTime.now();
-  DateTime _enterEndDate = DateTime(DateTime.now().year + 30);
-  TimeOfDay _enterStartTime = TimeOfDay.now();
-  TimeOfDay _enterEndTime = TimeOfDay.now();
-  String _enterApplicableProductType = "All";
-  bool _enterActive = false;
+  String? _enterCode;
+  String? _enterContent;
+  String? _enterType;
+  String? _enterDiscountType;
+  int? _enterDiscountValue;
+  int? _enterMinOrderAmount;
+  int? _enterUsageLimit;
+  int? _enterUsedCount;
+  DateTime? _enterStartDate;
+  DateTime? _enterEndDate;
+  TimeOfDay? _enterStartTime;
+  TimeOfDay? _enterEndTime;
+  String? _enterApplicableProductType;
+  bool? _enterActive;
+
+  @override
+  void initState() {
+    _enterCode = widget.coupon.code;
+    _enterContent = widget.coupon.content;
+    _enterType = widget.coupon.type;
+    _enterDiscountType = widget.coupon.discountType;
+    _enterDiscountValue = widget.coupon.discountValue;
+    _enterMinOrderAmount = widget.coupon.minOrderAmount;
+    _enterUsageLimit = widget.coupon.usageLimit;
+    _enterUsedCount = widget.coupon.usedCount;
+    _enterStartDate = widget.coupon.startDate;
+    _enterEndDate = widget.coupon.endDate;
+    _enterStartTime = TimeOfDay.fromDateTime(widget.coupon.startDate);
+    _enterEndTime = TimeOfDay.fromDateTime(widget.coupon.endDate);
+    _enterApplicableProductType = widget.coupon.applicableProductType;
+    _enterActive = widget.coupon.active;
+    super.initState();
+  }
 
   void showDate(Function(DateTime?) asign, {DateTime? init}) async {
     DateTime now = DateTime.now();
@@ -59,7 +80,7 @@ class _AddCouponState extends State<AddCoupon> {
     asign(pickedTime!);
   }
 
-  Widget buildDropdownField(String label,
+  Widget buildDropdownField(String label, String initValue,
       {required List<String> listDropDown,
       required Function(dynamic) onchanged}) {
     return Column(
@@ -74,7 +95,7 @@ class _AddCouponState extends State<AddCoupon> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField(
-          value: listDropDown[0],
+          value: initValue,
           items: [
             ...listDropDown.map(
               (item) {
@@ -95,7 +116,8 @@ class _AddCouponState extends State<AddCoupon> {
     );
   }
 
-  Widget buildTextField(String label, Function(String?) onSaved,
+  Widget buildTextField(
+      String label, Function(String?) onSaved, String initValue,
       {TextInputType? inputType}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,6 +131,7 @@ class _AddCouponState extends State<AddCoupon> {
         ),
         const SizedBox(height: 8),
         TextFormField(
+          initialValue: initValue,
           style: Theme.of(context).textTheme.bodySmall,
           keyboardType: inputType,
           decoration: InputDecoration(
@@ -130,26 +153,32 @@ class _AddCouponState extends State<AddCoupon> {
     setState(() {
       _isLoading = true;
     });
-    print("clicked");
     if (_formKey.currentState!.validate()) {
       try {
         _formKey.currentState!.save();
         final checkCouponExist = await FirebaseFirestore.instance
             .collection("discount_codes")
+            .where(FieldPath.documentId, isNotEqualTo: widget.coupon.id)
             .where("code", isEqualTo: _enterCode)
             .get();
         if (checkCouponExist.docs.isNotEmpty) {
           throw Exception("Code was exist");
         }
-        final tempStart = DateTime(_enterStartDate.year, _enterStartDate.month,
-            _enterStartDate.day, _enterStartTime.hour, _enterStartTime.minute);
-        final tempEnd = DateTime(_enterEndDate.year, _enterEndDate.month,
-            _enterEndDate!.day, _enterEndTime.hour, _enterEndTime.minute);
+        final tempStart = DateTime(
+            _enterStartDate!.year,
+            _enterStartDate!.month,
+            _enterStartDate!.day,
+            _enterStartTime!.hour,
+            _enterStartTime!.minute);
+        final tempEnd = DateTime(_enterEndDate!.year, _enterEndDate!.month,
+            _enterEndDate!.day, _enterEndTime!.hour, _enterEndTime!.minute);
         if (tempStart.isAfter(tempEnd)) {
           throw Exception("Start date is after end date.");
         }
-        final newCoupon =
-            await FirebaseFirestore.instance.collection("discount_codes").add({
+        final newCoupon = await FirebaseFirestore.instance
+            .collection("discount_codes")
+            .doc(widget.coupon.id)
+            .update({
           "code": _enterCode,
           "content": _enterContent,
           "type": _enterType,
@@ -159,17 +188,27 @@ class _AddCouponState extends State<AddCoupon> {
           "usage_limit": _enterUsageLimit,
           "used_count": 0,
           "start_date": DateTime(
-              _enterStartDate.year,
-              _enterStartDate.month,
-              _enterStartDate.day,
-              _enterStartTime.hour,
-              _enterStartTime.minute),
-          "end_date": DateTime(_enterEndDate.year, _enterEndDate.month,
-              _enterEndDate.day, _enterEndTime.hour, _enterEndTime.minute),
+              _enterStartDate!.year,
+              _enterStartDate!.month,
+              _enterStartDate!.day,
+              _enterStartTime!.hour,
+              _enterStartTime!.minute),
+          "end_date": DateTime(_enterEndDate!.year, _enterEndDate!.month,
+              _enterEndDate!.day, _enterEndTime!.hour, _enterEndTime!.minute),
           "active": _enterActive,
           "applicable_product_type": _enterApplicableProductType,
         });
-        Navigator.of(context).pop(newCoupon.id);
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("Success"),
+            action: SnackBarAction(
+              label: "Ok",
+              onPressed: () {},
+            ),
+          ),
+        );
       } catch (e) {
         Navigator.of(context).pop("");
         ScaffoldMessenger.of(context).clearSnackBars();
@@ -211,8 +250,14 @@ class _AddCouponState extends State<AddCoupon> {
             children: [
               Row(
                 children: [
-                  Text("Add coupon",
-                      style: Theme.of(context).textTheme.bodyLarge),
+                  Text(
+                    "Edit coupon",
+                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                          color: widget.coupon.type == "product"
+                              ? Colors.orange
+                              : Colors.green[300],
+                        ),
+                  ),
                   const Spacer(),
                   IconButton(
                     onPressed: () {
@@ -227,12 +272,13 @@ class _AddCouponState extends State<AddCoupon> {
               ),
               buildTextField("Code", (value) {
                 _enterCode = value!.trim();
-              }),
+              }, _enterCode!),
               buildTextField("Content", (value) {
                 _enterContent = value!.trim();
-              }),
+              }, _enterContent!),
               buildDropdownField(
                 "Type",
+                _enterType!,
                 listDropDown: type,
                 onchanged: (value) {
                   setState(() {
@@ -242,6 +288,7 @@ class _AddCouponState extends State<AddCoupon> {
               ),
               buildDropdownField(
                 "Discount Type",
+                _enterDiscountType!,
                 listDropDown: discountType,
                 onchanged: (value) {
                   setState(() {
@@ -251,13 +298,15 @@ class _AddCouponState extends State<AddCoupon> {
               ),
               buildTextField("Discount Value", (value) {
                 _enterDiscountValue = int.parse(value!.trim());
-              }, inputType: TextInputType.number),
+              }, _enterDiscountValue!.toString(),
+                  inputType: TextInputType.number),
               buildTextField("Min Order Amout", (value) {
                 _enterMinOrderAmount = int.parse(value!.trim());
-              }, inputType: TextInputType.number),
+              }, _enterMinOrderAmount.toString(),
+                  inputType: TextInputType.number),
               buildTextField("Usage Limit", (value) {
                 _enterUsageLimit = int.parse(value!.trim());
-              }, inputType: TextInputType.number),
+              }, _enterUsageLimit.toString(), inputType: TextInputType.number),
               Text(
                 "Start",
                 style: Theme.of(context)
@@ -283,7 +332,7 @@ class _AddCouponState extends State<AddCoupon> {
                         const Icon(Icons.date_range),
                         const SizedBox(width: 8),
                         Text(
-                          formartDate(_enterStartDate),
+                          formartDate(_enterStartDate!),
                         ),
                       ],
                     ),
@@ -302,7 +351,7 @@ class _AddCouponState extends State<AddCoupon> {
                         const Icon(Icons.timelapse),
                         const SizedBox(width: 8),
                         Text(
-                          formatTime(_enterStartTime),
+                          formatTime(_enterStartTime!),
                         )
                       ],
                     ),
@@ -337,7 +386,7 @@ class _AddCouponState extends State<AddCoupon> {
                         const Icon(Icons.date_range),
                         const SizedBox(width: 8),
                         Text(
-                          formartDate(_enterEndDate),
+                          formartDate(_enterEndDate!),
                         ),
                       ],
                     ),
@@ -356,7 +405,7 @@ class _AddCouponState extends State<AddCoupon> {
                         const Icon(Icons.timelapse),
                         const SizedBox(width: 8),
                         Text(
-                          formatTime(_enterEndTime),
+                          formatTime(_enterEndTime!),
                         )
                       ],
                     ),
@@ -368,6 +417,7 @@ class _AddCouponState extends State<AddCoupon> {
               ),
               buildDropdownField(
                 "Applicable Product Type",
+                _enterApplicableProductType!,
                 listDropDown: typeProc,
                 onchanged: (value) {
                   setState(() {
@@ -386,7 +436,7 @@ class _AddCouponState extends State<AddCoupon> {
                   ),
                   const Spacer(),
                   Switch(
-                      value: _enterActive,
+                      value: _enterActive!,
                       onChanged: (value) {
                         setState(() {
                           _enterActive = value;

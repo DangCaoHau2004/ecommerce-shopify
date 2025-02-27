@@ -63,14 +63,14 @@ Future<String> navigatorToAllAdress(context) async {
   return idSelect.toString();
 }
 
-void navigatorToSelectCoupon(
-  context,
-) {
-  Navigator.of(context).push<String>(
+Future<Map<String, String>> navigatorToSelectCoupon(context) async {
+  final data = await Navigator.of(context).push<Map<String, String>>(
     MaterialPageRoute(
       builder: (context) => const SelectCoupon(),
     ),
   );
+  print(data);
+  return data!;
 }
 
 void navigatorToCoupon(

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shopify/models/list_chat.dart';
 import 'package:shopify/models/status_page.dart';
+import 'package:shopify/screens/admin/widget/chat/detail_chat.dart';
 import 'package:shopify/utils/formart_date_time.dart';
 import 'package:shopify/widgets/status_page.dart';
 
@@ -146,7 +147,15 @@ class _ListChatScreenState extends State<ListChatScreen> {
                   itemCount: listChat.length,
                   itemBuilder: (context, idx) {
                     return TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (context) {
+                          return DetailChat(
+                            uidOrtherUser: listChat[idx].uid,
+                            name: listChat[idx].username,
+                          );
+                        }));
+                      },
                       child: Container(
                         decoration: BoxDecoration(
                           border: Border.all(width: 1, color: Colors.black),

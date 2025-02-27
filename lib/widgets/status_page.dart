@@ -24,10 +24,10 @@ class StatusPage extends StatelessWidget {
   Widget error(context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Error: $e"),
+        title: Text("Error: $e", style: Theme.of(context).textTheme.bodyLarge),
       ),
-      body: const Center(
-        child: Text("Error: $e"),
+      body: Center(
+        child: Text("Error: $e", style: Theme.of(context).textTheme.bodySmall),
       ),
     );
   }
@@ -35,10 +35,13 @@ class StatusPage extends StatelessWidget {
   Widget noData(context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("No data"),
+        title: Text(
+          "No data",
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
       ),
-      body: const Center(
-        child: CircularProgressIndicator(),
+      body: Center(
+        child: Text("No data", style: Theme.of(context).textTheme.bodySmall),
       ),
     );
   }

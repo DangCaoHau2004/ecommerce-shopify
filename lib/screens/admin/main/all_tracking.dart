@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shopify/widgets/status_tracking.dart';
+import 'package:shopify/screens/admin/widget/tracking/status_tracking.dart';
 
 class TabviewTrackingScreen extends StatefulWidget {
   const TabviewTrackingScreen({super.key, required this.tab});

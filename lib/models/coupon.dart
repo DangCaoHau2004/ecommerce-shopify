@@ -27,12 +27,13 @@ class Coupon {
   final bool active;
   final String applicableProductType;
 // có 2 trường hợp xóa code 1 là sau khi đã hết hạn, 2 là ko tồn tại
+// có 2 trường hợp thêm code sai 1 là sau khi đã hết hạn, 2 là trước khi bắt đầu, 3 là chưa active
 // ko xóa code sau khi đã sử dụng
 // chỉ có thể add code cho user sau khi đã active và code còn hiệu lực
   Map<String, dynamic> getCouponData() {
     return {
       "code": code,
-      "conten": content,
+      "content": content,
       "type": type,
       "discount_type": discountType,
       "discount_value": discountValue,

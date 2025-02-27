@@ -19,8 +19,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final GlobalKey<FormState> _keyCommentForm = GlobalKey<FormState>();
   String _enterMessage = "";
 
-  // Giả sử `userData` là thông tin người dùng hiện tại
-
   void _addMessage() async {
     if (_keyCommentForm.currentState!.validate()) {
       _keyCommentForm.currentState!.save();

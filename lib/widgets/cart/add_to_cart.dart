@@ -80,28 +80,36 @@ class _AddToCartState extends ConsumerState<AddToCart> {
         .collection("users")
         .doc(userId)
         .collection("cart")
-        .doc(widget.product.id)
+        .where("id", isEqualTo: widget.product.id)
+        .where("color_select_index", isEqualTo: indexColorSelect)
         .get();
 
-    if (!productInCart.exists) {
+    if (productInCart.docs.isEmpty) {
       await FirebaseFirestore.instance
           .collection("users")
           .doc(userId)
           .collection("cart")
-          .doc(widget.product.id)
-          .set({
+          .add({
+        "id": widget.product.id,
         "purchase_quantity": count,
         "color_select_index": indexColorSelect,
       });
     } else {
-      FirebaseFirestore.instance
-          .collection("users")
-          .doc(userId)
-          .collection("cart")
-          .doc(widget.product.id)
-          .update(
-        {"purchase_quantity": productInCart["purchase_quantity"] + count},
-      );
+      if (productInCart.docs[0]["purchase_quantity"] + count <
+          widget.product.stockQuantity) {
+        FirebaseFirestore.instance
+            .collection("users")
+            .doc(userId)
+            .collection("cart")
+            .doc(productInCart.docs[0].id)
+            .update(
+          {
+            "id": widget.product.id,
+            "purchase_quantity":
+                productInCart.docs[0]["purchase_quantity"] + count,
+          },
+        );
+      }
     }
     Navigator.of(context).pop();
   }
