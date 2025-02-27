@@ -111,7 +111,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Expanded(
                       flex: 1,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          navigatorToTabviewTrackingScreen(context, 0);
+                        },
                         child: Column(
                           children: [
                             Icon(

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shopify/screens/admin/widget/tracking/status_tracking.dart';
 
-class TabviewTrackingScreen extends StatefulWidget {
-  const TabviewTrackingScreen({super.key, required this.tab});
+class AllTracking extends StatefulWidget {
+  const AllTracking({super.key, required this.tab});
   final int tab;
   @override
-  State<TabviewTrackingScreen> createState() => _TabviewTrackingScreenState();
+  State<AllTracking> createState() => _AllTrackingState();
 }
 
-class _TabviewTrackingScreenState extends State<TabviewTrackingScreen>
+class _AllTrackingState extends State<AllTracking>
     with TickerProviderStateMixin {
   late TabController _tabController;
   @override
@@ -90,12 +90,22 @@ class _TabviewTrackingScreenState extends State<TabviewTrackingScreen>
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [
-                StatusTracking(),
-                StatusTracking(),
-                StatusTracking(),
-                StatusTracking(),
-                StatusTracking(),
+              children: const [
+                StatusTrackingAdmin(
+                  type: "waiting",
+                ),
+                StatusTrackingAdmin(
+                  type: "prepare",
+                ),
+                StatusTrackingAdmin(
+                  type: "send",
+                ),
+                StatusTrackingAdmin(
+                  type: "success",
+                ),
+                StatusTrackingAdmin(
+                  type: "cancle",
+                ),
               ],
             ),
           ),

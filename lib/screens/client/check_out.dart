@@ -31,14 +31,125 @@ class CheckOutScreen extends ConsumerStatefulWidget {
 
 class _CheckOutScreenState extends ConsumerState<CheckOutScreen> {
   List<Product> product = [];
+  bool _isLoading = false;
   List<CartModel> cartProductSelect = [];
   String GHTK_API = dotenv.env['GHTK_API'].toString();
+  String pick_address = dotenv.env['pick_address'].toString();
+  String pick_province = dotenv.env['pick_province'].toString();
+  String pick_district = dotenv.env['pick_district'].toString();
   String? _idDeliverySelect;
   String? _idProductSelect;
   List<int> count = [];
   bool _isSelectCash = true;
   final String urlCheckFeeDeli = "services.giaohangtietkiem.vn";
   final String endPointCheckDeli = "/services/shipment/fee";
+  void payment(int total, Address address, List<Product> procduct) async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      double weight = 0;
+      for (var i = 0; i < procduct.length; i++) {
+        weight += procduct[i].weight;
+      }
+
+      final order = await FirebaseFirestore.instance.collection("orders").add({
+        "create_at": DateTime.now(),
+        "shipping_status": "waiting",
+        "total_price": total,
+        "total_weight": weight,
+        "uid_order": ref.read(userData)["uid"],
+      });
+      // //thêm order cho user
+      // await FirebaseFirestore.instance
+      //     .collection("users")
+      //     .doc(ref.watch(userData)["uid"])
+      //     .collection("orders")
+      //     .doc(order.id)
+      //     .set({
+      //   "create_at": DateTime.now(),
+      // });
+      for (var i = 0; i < procduct.length; i++) {
+        await FirebaseFirestore.instance
+            .collection("orders")
+            .doc(order.id)
+            .collection("product")
+            .doc(widget.cartProductSelect[i].id)
+            .set({
+          "name": procduct[i].name,
+          "purchase_quantity": widget.cartProductSelect[i].purchaseQuantity,
+          "id_product": widget.cartProductSelect[i].id,
+          "color":
+              procduct[i].color[widget.cartProductSelect[i].colorSelectIndex],
+          "color_code": procduct[i]
+              .colorCode[widget.cartProductSelect[i].colorSelectIndex],
+          "link_img_match": procduct[i]
+              .linkImageMatch[widget.cartProductSelect[i].colorSelectIndex],
+        });
+        // xóa khỏi cart
+        await FirebaseFirestore.instance
+            .collection("users")
+            .doc(ref.watch(userData)["uid"])
+            .collection("cart")
+            .doc(widget.cartProductSelect[i].id)
+            .delete();
+      }
+      await FirebaseFirestore.instance
+          .collection("orders")
+          .doc(order.id)
+          .collection("address")
+          .doc(address.id)
+          .set(address.getAddressData());
+      // cập nhật lại voucher
+
+      if (_idDeliverySelect != null) {
+        await FirebaseFirestore.instance
+            .collection("users")
+            .doc(ref.read(userData)["uid"])
+            .collection("discount_codes")
+            .doc(_idDeliverySelect!)
+            .update({"used": true});
+      }
+      if (_idProductSelect != null) {
+        await FirebaseFirestore.instance
+            .collection("users")
+            .doc(ref.read(userData)["uid"])
+            .collection("discount_codes")
+            .doc(_idProductSelect!)
+            .update({"used": true});
+      }
+
+      setState(() {
+        _isLoading = false;
+      });
+      Navigator.of(context).popUntil((route) => route.isFirst);
+
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Success"),
+          action: SnackBarAction(label: "Ok", onPressed: () {}),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      Navigator.of(context).popUntil((route) => route.isFirst);
+
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("$e"),
+          action: SnackBarAction(label: "Ok", onPressed: () {}),
+        ),
+      );
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
   // khi ko có địa chỉ thì ko cho phép thanh toán và ko hiển thị phần giá ship
 
   // ý tưởng để làm các sản phẩm được áp dụng chia nhỏ tổng của từng sản phẩm ra
@@ -51,8 +162,8 @@ class _CheckOutScreenState extends ConsumerState<CheckOutScreen> {
 
   Future<String> getFeeDeli(Address address, String weight) async {
     Map<String, dynamic> queryParam = {
-      "pick_province": "Hà Nội",
-      "pick_district": "Quận Bắc Từ Liêm",
+      "pick_province": pick_province,
+      "pick_district": pick_district,
       "province": address.province,
       "district": address.district,
       "ward": address.ward,
@@ -88,6 +199,15 @@ class _CheckOutScreenState extends ConsumerState<CheckOutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Colors.orange,
+          ),
+        ),
+      );
+    }
     product = widget.productSelect;
 
     cartProductSelect = widget.cartProductSelect;
@@ -201,7 +321,6 @@ class _CheckOutScreenState extends ConsumerState<CheckOutScreen> {
                         .where("default", isEqualTo: true)
                         .snapshots(),
                     builder: (context, snapshot) {
-                      print("id: $idAddressSelect");
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const StatusPageWithOutScaffold(
                           type: StatusPageEnum.loading,
@@ -355,7 +474,8 @@ class _CheckOutScreenState extends ConsumerState<CheckOutScreen> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8.0),
                           child: Image.network(
-                            product[i].linkImg[0],
+                            product[i]
+                                .linkImg[cartProductSelect[i].colorSelectIndex],
                             height: height / 10,
                             fit: BoxFit.fitHeight,
                           ),
@@ -1126,7 +1246,21 @@ class _CheckOutScreenState extends ConsumerState<CheckOutScreen> {
                                 height: 50,
                               ),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  payment(
+                                      (_productCoupon == null
+                                              ? _totalPrice
+                                              : caculateTotalPriceAfterDiscount(
+                                                  originalPrice: _totalPrice,
+                                                  coupon: _productCoupon!)) +
+                                          (_deliveryCoupon == null
+                                              ? int.parse(fee)
+                                              : caculateTotalPriceAfterDiscount(
+                                                  originalPrice: int.parse(fee),
+                                                  coupon: _deliveryCoupon!)),
+                                      addressDeli,
+                                      widget.productSelect);
+                                },
                                 child: Text(
                                   "Payment",
                                   style: Theme.of(context)
@@ -1306,7 +1440,21 @@ class _CheckOutScreenState extends ConsumerState<CheckOutScreen> {
                                 height: 50,
                               ),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  payment(
+                                      (_productCoupon == null
+                                              ? _totalPrice
+                                              : caculateTotalPriceAfterDiscount(
+                                                  originalPrice: _totalPrice,
+                                                  coupon: _productCoupon!)) +
+                                          (_deliveryCoupon == null
+                                              ? int.parse(fee)
+                                              : caculateTotalPriceAfterDiscount(
+                                                  originalPrice: int.parse(fee),
+                                                  coupon: _deliveryCoupon!)),
+                                      addressDeli,
+                                      widget.productSelect);
+                                },
                                 child: Text(
                                   "Payment",
                                   style: Theme.of(context)

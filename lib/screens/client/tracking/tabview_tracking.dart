@@ -90,12 +90,22 @@ class _TabviewTrackingScreenState extends State<TabviewTrackingScreen>
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [
-                StatusTracking(),
-                StatusTracking(),
-                StatusTracking(),
-                StatusTracking(),
-                StatusTracking(),
+              children: const [
+                StatusTracking(
+                  type: "waiting",
+                ),
+                StatusTracking(
+                  type: "prepare",
+                ),
+                StatusTracking(
+                  type: "send",
+                ),
+                StatusTracking(
+                  type: "success",
+                ),
+                StatusTracking(
+                  type: "cancle",
+                ),
               ],
             ),
           ),

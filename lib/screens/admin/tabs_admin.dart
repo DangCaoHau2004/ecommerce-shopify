@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shopify/screens/admin/main/all_tracking.dart';
 import 'package:shopify/screens/admin/main/coupon_overview.dart';
 import 'package:shopify/screens/admin/main/list_chat.dart';
 import 'package:shopify/screens/admin/main/product_overview.dart';
@@ -22,7 +23,8 @@ class _TabsAdminScreenState extends State<TabsAdminScreen> {
     const ListChatScreen(),
     const ProductOverviewScreen(),
     const CouponOverviewScreen(),
-    const SettingAdminScreen()
+    const AllTracking(tab: 0),
+    const SettingAdminScreen(),
   ];
   @override
   Widget build(BuildContext context) {
@@ -40,6 +42,8 @@ class _TabsAdminScreenState extends State<TabsAdminScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
           BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Product'),
           BottomNavigationBarItem(icon: Icon(Icons.redeem), label: 'Coupon'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.delivery_dining), label: 'Tracking'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Setting'),
         ],
       ),

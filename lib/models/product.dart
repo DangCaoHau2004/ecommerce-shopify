@@ -55,3 +55,21 @@ class Product {
     };
   }
 }
+
+class ProductInOrder {
+  const ProductInOrder(
+      {required this.idProduct,
+      required this.color,
+      required this.purchaseQuantity,
+      required this.colorCode,
+      required this.linkImageMatch,
+      required this.id,
+      required this.name});
+  final String id;
+  final String color;
+  final int colorCode;
+  final String linkImageMatch;
+  final int purchaseQuantity;
+  final String name;
+  final String idProduct;
+}
