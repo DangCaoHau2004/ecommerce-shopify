@@ -25,6 +25,44 @@ Shopify is a mobile app project for selling furniture, allowing store owners to 
 </a>
 
 
-
-
 ## Android Screenshots
+### User Screenshots
+
+  Login & Sign Up                 |   Login & Sign Up        |  Detail Product
+:-------------------------:|:-------------------------:|:-------------------------:
+![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/1.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/2.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/3.jpg?raw=true)
+
+  Cart                 |   Favourite        |  Search Product
+:-------------------------:|:-------------------------:|:-------------------------:
+![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/4.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/5.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/7.jpg?raw=true)
+
+  Check Out                 |   Tracking        |  Tracking Detail
+:-------------------------:|:-------------------------:|:-------------------------:
+![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/8.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/9.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/10.jpg?raw=true)
+
+  Coupon                 |   Setting        |  Login With Google
+:-------------------------:|:-------------------------:|:-------------------------:
+![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/11.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/12.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/24.jpg?raw=true)
+
+---
+<br><br>
+<br><br>
+<br><br>
+### Admin Screenshots
+  List Chat                 |   List Product        |  List Voucher
+:-------------------------:|:-------------------------:|:-------------------------:
+![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/13.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/14.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/16.jpg?raw=true)
+
+---
+<br><br>
+<br><br>
+<br><br>
+### Dark Mode Screenshots
+  1                 |   2        |  3
+:-------------------------:|:-------------------------:|:-------------------------:
+![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/18.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/19.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/20.jpg?raw=true)
+
+  4                 |   5        |  6
+:-------------------------:|:-------------------------:|:-------------------------:
+![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/21.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/22.jpg?raw=true)|![](https://github.com/DangCaoHau2004/ecommerce-shopify/blob/master/snapshots/23.jpg?raw=true)
+---
