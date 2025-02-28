@@ -56,15 +56,15 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               "Discover Product",
               style: Theme.of(context).textTheme.bodyLarge,
             ),
-            actions: [
-              IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.tune,
-                  color: Theme.of(context).iconTheme.color,
-                ),
-              ),
-            ],
+            // actions: [
+            //   IconButton(
+            //     onPressed: () {},
+            //     icon: Icon(
+            //       Icons.tune,
+            //       color: Theme.of(context).iconTheme.color,
+            //     ),
+            //   ),
+            // ],
             bottom: TabBar(
               tabAlignment: TabAlignment.start,
               dividerColor: Colors.transparent,
