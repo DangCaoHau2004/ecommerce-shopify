@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shopify/models/product.dart';
 import 'package:shopify/models/status_page.dart';
-import 'package:shopify/providers/user_data.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopify/screens/admin/widget/tracking/detail_tracking.dart';
 import 'package:shopify/utils/formart_currency.dart';
@@ -78,7 +77,6 @@ class _StatusTrackingAdminState extends ConsumerState<StatusTrackingAdmin> {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    final userId = ref.read(userData)["uid"];
 
     return Padding(
       padding: const EdgeInsets.all(16.0),

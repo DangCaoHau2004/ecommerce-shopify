@@ -122,7 +122,6 @@ class _RateState extends ConsumerState<Rate> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.sizeOf(context).width;
     double height = MediaQuery.sizeOf(context).height;
     return _isLoading
         ? Container(

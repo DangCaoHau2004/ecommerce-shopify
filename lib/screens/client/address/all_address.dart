@@ -21,7 +21,6 @@ class _AllAddressScreenState extends ConsumerState<AllAddressScreen> {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.sizeOf(context).width;
-    double height = MediaQuery.sizeOf(context).height;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(

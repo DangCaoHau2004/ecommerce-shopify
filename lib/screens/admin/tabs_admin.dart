@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:shopify/screens/admin/main/all_tracking.dart';
 import 'package:shopify/screens/admin/main/coupon_overview.dart';
 import 'package:shopify/screens/admin/main/list_chat.dart';
@@ -9,7 +7,6 @@ import 'package:shopify/screens/admin/main/product_overview.dart';
 import 'package:shopify/screens/admin/main/setting_admin.dart';
 import 'package:shopify/screens/admin/widget/coupon/add_coupon.dart';
 import 'package:shopify/screens/admin/widget/product/add_product.dart';
-import 'package:shopify/screens/chat/chat.dart';
 
 class TabsAdminScreen extends StatefulWidget {
   const TabsAdminScreen({super.key});

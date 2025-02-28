@@ -51,7 +51,6 @@ class _ChangeProfileState extends ConsumerState<ChangeProfile> {
   String _enterUserName = "";
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.sizeOf(context).width;
     double height = MediaQuery.sizeOf(context).height;
     return Container(
       decoration: BoxDecoration(

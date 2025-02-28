@@ -20,7 +20,6 @@ class _SelectCouponState extends ConsumerState<SelectCoupon> {
   String? _idProductSelect;
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.sizeOf(context).width;
     double height = MediaQuery.sizeOf(context).height;
     return Scaffold(
       appBar: AppBar(

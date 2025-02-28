@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shopify/screens/client/main_screens/favorite.dart';
 import 'package:shopify/screens/client/main_screens/home.dart';
-import 'package:shopify/screens/client/main_screens/notification.dart';
 import 'package:shopify/screens/client/main_screens/profile.dart';
 import 'package:shopify/screens/client/main_screens/search.dart';
 
