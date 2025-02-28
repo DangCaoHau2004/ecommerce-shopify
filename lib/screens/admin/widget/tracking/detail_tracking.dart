@@ -10,8 +10,8 @@ import 'package:shopify/widgets/status_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:permission_handler/permission_handler.dart';
 
 class DetailTrackingAdmin extends StatefulWidget {
   const DetailTrackingAdmin({super.key, required this.idOrder});
@@ -94,13 +94,18 @@ class _DetailTrackingAdminState extends State<DetailTrackingAdmin> {
             headers: {"Token": GHTK_API, "X-Client-Source": label},
           );
           if (pdfResponse.statusCode == 200) {
-            // Lưu file PDF vào bộ nhớ thiết bị
-            final directory = await getApplicationDocumentsDirectory();
-            final filePath = '${directory.path}/${widget.idOrder}.pdf';
-            final file = File(filePath);
-            await file.writeAsBytes(pdfResponse.bodyBytes);
-            print(pdfResponse);
-            print("PDF đã lưu tại: $filePath");
+            // if ) {}
+            if (await Permission.manageExternalStorage.request().isGranted) {
+              // Lưu file PDF vào bộ nhớ thiết bị
+              final filePath =
+                  '/storage/emulated/0/Download/${widget.idOrder}.pdf';
+              final file = File(filePath);
+              await file.writeAsBytes(pdfResponse.bodyBytes);
+              print(pdfResponse);
+              print("PDF đã lưu tại: $filePath");
+            } else {
+              throw Exception("You must allow storage permission.");
+            }
           } else {
             print("Lỗi khi tải file PDF: ${pdfResponse.statusCode}");
             print("Nội dung phản hồi từ API: ${pdfResponse.body}");

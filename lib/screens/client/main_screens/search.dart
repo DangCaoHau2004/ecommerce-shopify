@@ -1,10 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:shopify/models/product.dart';
-import 'package:shopify/data/data_test.dart';
+import 'package:shopify/models/status_page.dart';
 import 'dart:math';
 import 'package:shopify/utils/formart_currency.dart';
 import 'package:shopify/widgets/main_screens/list_color.dart';
+import 'package:shopify/widgets/status_page.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -13,6 +14,61 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<QuerySnapshot>(
+        future: FirebaseFirestore.instance.collection("products").get(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const StatusPageWithOutScaffold(
+              type: StatusPageEnum.loading,
+              err: "",
+            );
+          } else if (snapshot.hasError) {
+            return StatusPageWithOutScaffold(
+              type: StatusPageEnum.error,
+              err: snapshot.error.toString(),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const StatusPageWithOutScaffold(
+              type: StatusPageEnum.noData,
+              err: "",
+            );
+          }
+          List<Product> allProc = [];
+          for (var i = 0; i < snapshot.data!.docs.length; i++) {
+            allProc.add(
+              Product(
+                createAt: snapshot.data!.docs[i]["create_at"].toDate(),
+                stockQuantity: snapshot.data!.docs[i]["stock_quantity"],
+                description: snapshot.data!.docs[i]["description"],
+                name: snapshot.data!.docs[i]["name"],
+                rate: snapshot.data!.docs[i]["rate"],
+                color: snapshot.data!.docs[i]["color"],
+                price: snapshot.data!.docs[i]["price"],
+                linkImg: snapshot.data!.docs[i]["link_img"],
+                type: snapshot.data!.docs[i]["type"],
+                weight: snapshot.data!.docs[i]["weight"] as double,
+                colorCode: List<int>.from(snapshot.data!.docs[i]["color_code"]),
+                linkImageMatch: snapshot.data!.docs[i]["link_image_match"],
+                sale: snapshot.data!.docs[i]["sale"],
+                id: snapshot.data!.docs[i].id,
+              ),
+            );
+          }
+          return Search(allProduct: allProc);
+        });
+  }
+}
+
+class Search extends StatefulWidget {
+  const Search({super.key, required this.allProduct});
+  final List<Product> allProduct;
+  @override
+  State<Search> createState() => _SearchState();
+}
+
+class _SearchState extends State<Search> {
   Widget imageProduct(String linkImage, int sale, double width, double height) {
     return Stack(
       children: [
@@ -46,16 +102,17 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  List<Product> productsearch = [];
+
   final _formSearchKey = GlobalKey<FormState>();
-  List<Product> product = [];
-  void _searchElement() {
+  void _searchElement(List<Product> proc) {
     if (_formSearchKey.currentState!.validate()) {
       _formSearchKey.currentState!.save();
-      final searchProduct = productTest.where((proc) {
+      final searchProduct = proc.where((proc) {
         return proc.name.toLowerCase().contains(_enterSearch.toLowerCase());
       }).toList();
       setState(() {
-        product = searchProduct;
+        productsearch = searchProduct;
       });
     }
   }
@@ -95,7 +152,7 @@ class _SearchScreenState extends State<SearchScreen> {
               key: _formSearchKey,
               child: TextFormField(
                 onChanged: (value) {
-                  _searchElement();
+                  _searchElement(widget.allProduct);
                 },
                 style: Theme.of(context).textTheme.bodySmall,
                 decoration: InputDecoration(
@@ -107,7 +164,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   suffixIcon: IconButton(
                     onPressed: () {
                       FocusScope.of(context).unfocus();
-                      _searchElement();
+                      _searchElement(widget.allProduct);
                     },
                     icon: const Icon(
                       Icons.search,
@@ -130,7 +187,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
         ),
-        if (product.isNotEmpty)
+        if (productsearch.isNotEmpty)
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
@@ -143,8 +200,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          imageProduct(product[index].linkImg[0],
-                              product[index].sale, width, height),
+                          imageProduct(productsearch[index].linkImg[0],
+                              productsearch[index].sale, width, height),
                           const SizedBox(
                             height: 16,
                           ),
@@ -157,7 +214,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 Text(
-                                  product[index].name,
+                                  productsearch[index].name,
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodySmall!
@@ -168,7 +225,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                   height: 16,
                                 ),
                                 Text(
-                                  "${formatCurrency(product[index].price)} đ",
+                                  "${formatCurrency(productsearch[index].price)} đ",
                                   style: Theme.of(context).textTheme.bodySmall,
                                   overflow: TextOverflow.ellipsis,
                                   textAlign: TextAlign.center,
@@ -179,7 +236,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: allColorOfProduct(context,
-                                      product[index].colorCode, 12, 12),
+                                      productsearch[index].colorCode, 12, 12),
                                 ),
                               ],
                             ),
@@ -190,7 +247,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 );
               },
-              childCount: product.length,
+              childCount: productsearch.length,
             ),
           ),
       ],
