@@ -165,9 +165,11 @@ class _ListChatScreenState extends State<ListChatScreen> {
                         margin: const EdgeInsets.only(bottom: 30),
                         child: Row(
                           children: [
-                            CircleAvatar(
-                              child: Image.asset("assets/images/user.png"),
+                            const CircleAvatar(
+                              radius: 15,
                               backgroundColor: Colors.transparent,
+                              backgroundImage:
+                                  AssetImage("assets/images/user.png"),
                             ),
                             const SizedBox(
                               width: 12,

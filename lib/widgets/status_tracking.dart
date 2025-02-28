@@ -152,6 +152,7 @@ class _StatusTrackingState extends ConsumerState<StatusTracking> {
                   }).toList();
 
                   return Container(
+                    margin: const EdgeInsets.only(bottom: 30),
                     decoration: BoxDecoration(
                       border: Border.all(
                           width: 0.2,

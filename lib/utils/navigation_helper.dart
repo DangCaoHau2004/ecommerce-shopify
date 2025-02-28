@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shopify/models/cart.dart';
 import 'package:shopify/models/product.dart';
+import 'package:shopify/screens/client/rate.dart';
+import 'package:shopify/screens/client/setting.dart';
 import 'package:shopify/screens/client/tracking/detail_tracking.dart';
 import 'package:shopify/screens/client/tracking/tabview_tracking.dart';
 import 'package:shopify/screens/chat/chat.dart';
@@ -39,6 +41,22 @@ void navigatorToCart(context) {
   Navigator.of(context).push(
     MaterialPageRoute(
       builder: (context) => const Cart(),
+    ),
+  );
+}
+
+void navigatorToSetting(context) {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => const SettingScreen(),
+    ),
+  );
+}
+
+void navigatorToRate(context) {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => const RateScreen(),
     ),
   );
 }

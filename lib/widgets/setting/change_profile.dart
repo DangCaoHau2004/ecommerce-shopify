@@ -1,17 +1,50 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopify/providers/user_data.dart';
 
-class ChangeProfile extends StatefulWidget {
+class ChangeProfile extends ConsumerStatefulWidget {
   const ChangeProfile({super.key});
   @override
-  State<ChangeProfile> createState() => _ChangeProfileState();
+  ConsumerState<ChangeProfile> createState() => _ChangeProfileState();
 }
 
-class _ChangeProfileState extends State<ChangeProfile> {
+class _ChangeProfileState extends ConsumerState<ChangeProfile> {
   final _keyForm = GlobalKey<FormState>();
   void _changeProfile() {
+    FocusScope.of(context).unfocus();
+
     if (_keyForm.currentState!.validate()) {
-      _keyForm.currentState!.save();
+      try {
+        _keyForm.currentState!.save();
+        ref.read(userData.notifier).state["username"] = _enterUserName;
+        FirebaseFirestore.instance
+            .collection("users")
+            .doc(ref.read(userData)["uid"])
+            .update(
+          {
+            "username": _enterUserName,
+          },
+        );
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("Success"),
+            action: SnackBarAction(label: "Ok", onPressed: () {}),
+          ),
+        );
+      } catch (e) {
+        Navigator.of(context).pop();
+
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("$e"),
+            action: SnackBarAction(label: "Ok", onPressed: () {}),
+          ),
+        );
+      }
     }
   }
 
@@ -21,7 +54,11 @@ class _ChangeProfileState extends State<ChangeProfile> {
     double width = MediaQuery.sizeOf(context).width;
     double height = MediaQuery.sizeOf(context).height;
     return Container(
-      color: Theme.of(context).colorScheme.onTertiary,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        color: Theme.of(context).colorScheme.onTertiary,
+      ),
       height: height * 0.75,
       padding: const EdgeInsets.all(16),
       child: Column(

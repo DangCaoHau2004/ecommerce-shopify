@@ -104,7 +104,7 @@ class _TabviewTrackingScreenState extends State<TabviewTrackingScreen>
                   type: "success",
                 ),
                 StatusTracking(
-                  type: "cancle",
+                  type: "cancel",
                 ),
               ],
             ),

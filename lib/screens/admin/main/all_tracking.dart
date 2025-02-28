@@ -104,7 +104,7 @@ class _AllTrackingState extends State<AllTracking>
                   type: "success",
                 ),
                 StatusTrackingAdmin(
-                  type: "cancle",
+                  type: "cancel",
                 ),
               ],
             ),

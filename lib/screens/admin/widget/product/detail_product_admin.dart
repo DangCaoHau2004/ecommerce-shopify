@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shopify/models/product.dart';
+import 'package:shopify/screens/admin/widget/chat/detail_chat.dart';
 import 'package:shopify/screens/admin/widget/product/edit_product.dart';
 import 'package:shopify/utils/formart_currency.dart';
 import 'package:shopify/widgets/main_screens/list_color.dart';
@@ -112,20 +113,26 @@ class _DetailProductAdminScreenState
             err: "",
           );
         }
+        final data = snapshot.data!.data() as Map<String, dynamic>;
+
         final Product product = Product(
-          createAt: snapshot.data!["create_at"].toDate(),
-          stockQuantity: snapshot.data!["stock_quantity"],
-          description: snapshot.data!["description"],
-          name: snapshot.data!["name"],
-          rate: snapshot.data!["rate"],
-          color: snapshot.data!["color"],
-          price: snapshot.data!["price"],
-          linkImg: snapshot.data!["link_img"],
-          type: snapshot.data!["type"],
-          weight: snapshot.data!["weight"],
-          colorCode: List<int>.from(snapshot.data!["color_code"]),
-          linkImageMatch: snapshot.data!["link_image_match"],
-          sale: snapshot.data!["sale"],
+          createAt: data.containsKey("create_at")
+              ? data["create_at"].toDate()
+              : DateTime.now(),
+          stockQuantity: data["stock_quantity"],
+          description: data["description"],
+          name: data["name"],
+          rate: data["rate"],
+          color: data["color"],
+          price: data["price"],
+          linkImg: data["link_img"],
+          type: data["type"],
+          weight: data["weight"],
+          colorCode: data["color_code"] != null
+              ? List<int>.from(data["color_code"])
+              : [],
+          linkImageMatch: data["link_image_match"],
+          sale: data["sale"],
           id: widget.idProduct,
         );
 
@@ -183,9 +190,38 @@ class _DetailProductAdminScreenState
                             color: Theme.of(context).colorScheme.onSurface,
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Text(
-                            "133 Reviews",
-                            style: Theme.of(context).textTheme.bodySmall,
+                          child: FutureBuilder(
+                            future: FirebaseFirestore.instance
+                                .collection("products")
+                                .doc(widget.idProduct)
+                                .collection("reviews")
+                                .count()
+                                .get(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const StatusPageWithOutScaffold(
+                                  type: StatusPageEnum.loading,
+                                  err: "",
+                                );
+                              }
+                              if (snapshot.hasError) {
+                                return Text(
+                                  "0 Reviews",
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                );
+                              }
+                              if (!snapshot.hasData || snapshot.data == null) {
+                                return Text(
+                                  "0 Reviews",
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                );
+                              }
+                              return Text(
+                                "${snapshot.data!.count} Reviews",
+                                style: Theme.of(context).textTheme.bodySmall,
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -330,52 +366,104 @@ class _DetailProductAdminScreenState
                     const SizedBox(
                       height: 40,
                     ),
-                    Row(
-                      children: [
-                        TextButton(
-                          style:
-                              Theme.of(context).textButtonTheme.style!.copyWith(
-                                    alignment: Alignment.centerLeft,
-                                  ),
-                          onPressed: () {},
-                          child: CircleAvatar(
-                            backgroundColor: Colors.transparent,
-                            child: Image.asset(
-                              "assets/images/user.png",
-                              height: height / 30,
-                              fit: BoxFit.fitHeight,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 12,
-                        ),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  for (int idx = 0; idx < 5; idx++)
-                                    const Icon(
-                                      Icons.star,
-                                      color: Colors.amberAccent,
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(
-                                height: 8,
-                              ),
-                              Text(
-                                "Đép",
+                    FutureBuilder(
+                        future: FirebaseFirestore.instance
+                            .collection("products")
+                            .doc(widget.idProduct)
+                            .collection("reviews")
+                            .get(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const StatusPageWithOutScaffold(
+                              type: StatusPageEnum.loading,
+                              err: "",
+                            );
+                          }
+                          if (snapshot.hasError) {
+                            return Center(
+                              child: Text(
+                                "None",
                                 style: Theme.of(context).textTheme.bodySmall,
-                                overflow: TextOverflow.clip,
                               ),
+                            );
+                          }
+                          if (!snapshot.hasData || snapshot.data == null) {
+                            return Center(
+                              child: Text(
+                                "None",
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            );
+                          }
+                          final reviews = snapshot.data!.docs;
+                          return Column(
+                            children: [
+                              for (QueryDocumentSnapshot review in reviews)
+                                Row(
+                                  children: [
+                                    TextButton(
+                                      style: Theme.of(context)
+                                          .textButtonTheme
+                                          .style!
+                                          .copyWith(
+                                            alignment: Alignment.centerLeft,
+                                          ),
+                                      onPressed: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) {
+                                              return DetailChat(
+                                                  uidOrtherUser: review["uid"],
+                                                  name: review["username"]);
+                                            },
+                                          ),
+                                        );
+                                      },
+                                      child: const CircleAvatar(
+                                        radius: 15,
+                                        backgroundColor: Colors.transparent,
+                                        backgroundImage: AssetImage(
+                                            "assets/images/user.png"),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 12,
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              for (int idx = 0;
+                                                  idx < review["rate"];
+                                                  idx++)
+                                                const Icon(
+                                                  Icons.star,
+                                                  color: Colors.amberAccent,
+                                                ),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                            height: 8,
+                                          ),
+                                          Text(
+                                            review["content"],
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall,
+                                            overflow: TextOverflow.clip,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                             ],
-                          ),
-                        ),
-                      ],
-                    ),
+                          );
+                        }),
                     const SizedBox(
                       height: 40,
                     ),

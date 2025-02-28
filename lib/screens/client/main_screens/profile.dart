@@ -24,7 +24,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           pinned: false,
           actions: [
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                navigatorToSetting(context);
+              },
               icon: const Icon(Icons.settings, color: Colors.white),
             ),
             IconButton(
@@ -65,9 +67,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   width: 4.0,
                                 ),
                               ),
-                              child: CircleAvatar(
-                                child: Image.asset("assets/images/user.png"),
+                              child: const CircleAvatar(
+                                radius: 15,
                                 backgroundColor: Colors.transparent,
+                                backgroundImage:
+                                    AssetImage("assets/images/user.png"),
                               ),
                             ),
                           ),
@@ -139,7 +143,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Expanded(
                       flex: 1,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          navigatorToTabviewTrackingScreen(context, 1);
+                        },
                         child: Column(
                           children: [
                             Icon(
@@ -165,7 +171,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Expanded(
                       flex: 1,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          navigatorToTabviewTrackingScreen(context, 2);
+                        },
                         child: Column(
                           children: [
                             Icon(
@@ -191,7 +199,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Expanded(
                       flex: 1,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          navigatorToRate(context);
+                        },
                         child: Column(
                           children: [
                             Icon(

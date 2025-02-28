@@ -78,7 +78,7 @@ class _CheckOutScreenState extends ConsumerState<CheckOutScreen> {
             .set({
           "name": procduct[i].name,
           "purchase_quantity": widget.cartProductSelect[i].purchaseQuantity,
-          "id_product": widget.cartProductSelect[i].id,
+          "id_product": procduct[i].id,
           "color":
               procduct[i].color[widget.cartProductSelect[i].colorSelectIndex],
           "color_code": procduct[i]

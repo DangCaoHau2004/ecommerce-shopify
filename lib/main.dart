@@ -1,10 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:shopify/models/coupon.dart';
 import 'package:shopify/models/user_data.dart';
+import 'package:shopify/providers/setting.dart';
 import 'package:shopify/screens/admin/tabs_admin.dart';
-import 'package:shopify/screens/client/address/add_new_address.dart';
-import 'package:shopify/screens/client/coupon.dart';
 import 'package:shopify/screens/client/tabs.dart';
 import 'package:shopify/screens/login_signup.dart';
 import 'package:shopify/widgets/status_page.dart';
@@ -15,6 +13,7 @@ import 'firebase_options.dart';
 import 'package:flutter/services.dart';
 import 'package:shopify/models/status_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 var kColorScheme =
     ColorScheme.fromSeed(seedColor: const Color.fromARGB(197, 255, 166, 2))
@@ -26,7 +25,20 @@ var kColorScheme =
   scrim: const Color.fromARGB(255, 0, 0, 0),
 
   // màu của border trong detail product
-  onSurface: const Color.fromARGB(255, 211, 209, 209),
+  onSurface: const Color.fromARGB(255, 211, 211, 209),
+);
+
+var dColorScheme =
+    ColorScheme.fromSeed(seedColor: const Color.fromARGB(197, 255, 166, 2))
+        .copyWith(
+  primary: Colors.orange,
+  onTertiary: Colors.black,
+  secondary: Colors.white,
+  // màu của CircularProgressIndicator
+  scrim: const Color.fromARGB(255, 255, 255, 255),
+
+  // màu của border trong detail product
+  onSurface: const Color.fromARGB(255, 255, 152, 0),
 );
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,14 +47,19 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await dotenv.load(fileName: ".env");
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool? dm = prefs.getBool("darkMode");
+
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]).then(
     (_) {
       runApp(
-        const ProviderScope(
-          child: MyApp(),
+        ProviderScope(
+          child: MyApp(
+            darkMode: dm ?? false,
+          ),
         ),
       );
     },
@@ -50,8 +67,8 @@ void main() async {
 }
 
 class MyApp extends ConsumerStatefulWidget {
-  const MyApp({super.key});
-
+  const MyApp({super.key, required this.darkMode});
+  final bool darkMode;
   @override
   ConsumerState<MyApp> createState() => _MyAppState();
 }
@@ -67,6 +84,16 @@ class _MyAppState extends ConsumerState<MyApp> {
       return kColorScheme.primary;
     }
     return kColorScheme.onTertiary;
+  }
+
+  @override
+  void initState() {
+    Future.microtask(() {
+      if (widget.darkMode != ref.watch(darkMode)) {
+        ref.read(darkMode.notifier).state = widget.darkMode;
+      }
+    });
+    super.initState();
   }
 
   @override
@@ -164,10 +191,9 @@ class _MyAppState extends ConsumerState<MyApp> {
               ),
         ),
         snackBarTheme: const SnackBarThemeData(
+          backgroundColor: Colors.black,
           contentTextStyle: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.normal,
-          ),
+              fontSize: 16, fontWeight: FontWeight.normal, color: Colors.white),
         ),
         textButtonTheme: TextButtonThemeData(
           style: ButtonStyle(
@@ -203,6 +229,141 @@ class _MyAppState extends ConsumerState<MyApp> {
           backgroundColor: kColorScheme.onTertiary,
         ),
       ),
+      darkTheme: ThemeData(
+        colorScheme: dColorScheme,
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        useMaterial3: true,
+        scaffoldBackgroundColor: dColorScheme.onTertiary,
+        checkboxTheme: CheckboxThemeData(
+          checkColor: WidgetStateProperty.all(dColorScheme.onTertiary),
+          fillColor: WidgetStateProperty.resolveWith(getColor),
+        ),
+        datePickerTheme: DatePickerThemeData(
+          backgroundColor: dColorScheme.onTertiary,
+          surfaceTintColor: Colors.transparent,
+          headerForegroundColor: dColorScheme.secondary,
+          dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(MaterialState.disabled)) {
+              return dColorScheme.secondary.withOpacity(0.3);
+            }
+            return dColorScheme.secondary;
+          }),
+          dayStyle: const TextStyle(
+            fontSize: 20,
+            color: Colors.white,
+          ),
+          yearStyle: const TextStyle(
+            fontSize: 20,
+            color: Colors.white,
+          ),
+        ),
+        timePickerTheme: TimePickerThemeData(
+          backgroundColor: dColorScheme.onTertiary,
+          hourMinuteColor: MaterialStateColor.resolveWith((states) {
+            if (states.contains(MaterialState.selected)) {
+              return dColorScheme.primary;
+            }
+            return dColorScheme.onTertiary;
+          }),
+          hourMinuteTextColor: MaterialStateColor.resolveWith((states) {
+            if (states.contains(MaterialState.selected)) {
+              return dColorScheme.onTertiary;
+            }
+            return dColorScheme.secondary;
+          }),
+          dialBackgroundColor: dColorScheme.onTertiary,
+          dialHandColor: dColorScheme.primary,
+          dialTextColor: MaterialStateColor.resolveWith((states) {
+            if (states.contains(MaterialState.selected)) {
+              return dColorScheme.onTertiary;
+            }
+            return dColorScheme.secondary;
+          }),
+          entryModeIconColor: dColorScheme.secondary,
+          helpTextStyle: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: dColorScheme.secondary,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all(dColorScheme.primary),
+            textStyle: WidgetStateProperty.all(
+              TextStyle(
+                color: dColorScheme.onTertiary,
+                fontSize: 18,
+              ),
+            ),
+          ),
+        ),
+        bottomAppBarTheme: const BottomAppBarTheme(),
+        appBarTheme: AppBarTheme(
+          color: dColorScheme.onTertiary,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: IconThemeData(
+            color: dColorScheme.secondary,
+          ),
+        ),
+        iconTheme: IconThemeData(
+          color: dColorScheme.secondary,
+        ),
+        outlinedButtonTheme: const OutlinedButtonThemeData(
+          style: ButtonStyle(
+              // overlayColor: WidgetStateProperty.all(
+              //   Colors.transparent,
+              // ),
+              ),
+        ),
+        snackBarTheme: const SnackBarThemeData(
+          backgroundColor: Colors.white,
+          contentTextStyle: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.normal,
+            color: Colors.black,
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: ButtonStyle(
+            elevation: WidgetStateProperty.all(0),
+            overlayColor: WidgetStateProperty.all(Colors.transparent),
+            padding: WidgetStateProperty.all(EdgeInsets.zero),
+            backgroundColor: WidgetStateProperty.all(
+              Colors.transparent,
+            ),
+          ),
+        ),
+        cardTheme: const CardTheme(
+          color: Colors.transparent,
+          shadowColor: Colors.transparent,
+          elevation: 0,
+        ),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            color: Colors.white,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 20,
+            color: Colors.white,
+          ),
+          bodySmall: TextStyle(
+            fontSize: 16,
+            color: Colors.white,
+          ),
+        ),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: dColorScheme.onTertiary,
+          unselectedItemColor: Colors.white,
+        ),
+      ),
+      themeMode: ref.watch(darkMode) ? ThemeMode.dark : ThemeMode.light,
       home: StreamBuilder(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {

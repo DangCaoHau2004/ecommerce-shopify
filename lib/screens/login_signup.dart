@@ -3,16 +3,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopify/utils/navigation_helper.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopify/providers/setting.dart';
 
-class LoginSignUp extends StatefulWidget {
+class LoginSignUp extends ConsumerStatefulWidget {
   const LoginSignUp({super.key});
   @override
-  State<StatefulWidget> createState() {
+  ConsumerState<ConsumerStatefulWidget> createState() {
     return _LoginSignUpState();
   }
 }
 
-class _LoginSignUpState extends State<LoginSignUp> {
+class _LoginSignUpState extends ConsumerState<LoginSignUp> {
   final _formKey = GlobalKey<FormState>();
   String _enterEmail = "";
   String _enterPassword = "";
@@ -320,28 +322,28 @@ class _LoginSignUpState extends State<LoginSignUp> {
                     ),
                   if (_isLogin)
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        SizedBox(
-                          child: Row(
-                            children: [
-                              Checkbox(
-                                value: _isChecked,
-                                onChanged: _isLoading
-                                    ? null
-                                    : (bool? value) {
-                                        setState(() {
-                                          _isChecked = value!;
-                                        });
-                                      },
-                              ),
-                              Text(
-                                "Remember Me",
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        ),
+                        // SizedBox(
+                        //   child: Row(
+                        //     children: [
+                        //       Checkbox(
+                        //         value: _isChecked,
+                        //         onChanged: _isLoading
+                        //             ? null
+                        //             : (bool? value) {
+                        //                 setState(() {
+                        //                   _isChecked = value!;
+                        //                 });
+                        //               },
+                        //       ),
+                        //       Text(
+                        //         "Remember Me",
+                        //         style: Theme.of(context).textTheme.bodySmall,
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                         if (!_isLoading)
                           TextButton(
                             onPressed: () {
@@ -399,7 +401,9 @@ class _LoginSignUpState extends State<LoginSignUp> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Image.asset(
-                          "assets/images/google_light.png",
+                          ref.watch(darkMode)
+                              ? "assets/images/google_dark.jpg"
+                              : "assets/images/google_light.png",
                           width: 50,
                           height: 50,
                           fit: BoxFit.fitHeight,

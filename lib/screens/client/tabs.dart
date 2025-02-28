@@ -18,7 +18,7 @@ class _TabsScreenState extends State<TabsScreen> {
     const Home(),
     const FavoriteScreen(),
     const SearchScreen(),
-    const NotificationScreen(),
+    // const NotificationScreen(),
     const ProfileScreen(),
   ];
 
@@ -39,8 +39,8 @@ class _TabsScreenState extends State<TabsScreen> {
           BottomNavigationBarItem(
               icon: Icon(Icons.favorite), label: 'Favorite'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.notifications), label: 'Notification'),
+          // BottomNavigationBarItem(
+          //     icon: Icon(Icons.notifications), label: 'Notification'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),

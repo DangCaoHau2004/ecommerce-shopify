@@ -18,7 +18,7 @@ class _EditPasswordState extends ConsumerState<EditPassword> {
   bool _isLoading = false;
   bool _hideOldPassword = true;
   bool _hideNewPassword = true;
-  void _EditPassword() async {
+  void _editPassword() async {
     FocusScope.of(context).unfocus();
 
     setState(() {
@@ -36,15 +36,17 @@ class _EditPasswordState extends ConsumerState<EditPassword> {
           },
         );
         ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text("Success"),
-          action: SnackBarAction(label: "Ok", onPressed: () {}),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("Success"),
+            action: SnackBarAction(label: "Ok", onPressed: () {}),
+          ),
+        );
         setState(() {
           _isLoading = false;
         });
         Navigator.of(context).popUntil((route) => route.isFirst);
-        await FirebaseAuth.instance.signOut();
+        FirebaseAuth.instance.signOut();
       } catch (e) {
         Navigator.pop(context, e.toString());
       }
@@ -221,7 +223,7 @@ class _EditPasswordState extends ConsumerState<EditPassword> {
                     // Submit Button
                     Center(
                       child: ElevatedButton(
-                        onPressed: _EditPassword,
+                        onPressed: _editPassword,
                         child: Text(
                           "Edit",
                           style:
